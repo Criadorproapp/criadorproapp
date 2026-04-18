@@ -1,0 +1,22 @@
+.git
+node_modules
+npm-debug.log
+_release_repo
+_acl_test
+backup-codigo-*.zip
+livros
+livro
+IA FERRAMENTAS
+claude
+.vscode
+*.pdf
+*.rar
+*.zip
+*.7z
+*.exe
+*.ppt
+*.pptx
+*.doc
+*.docx
+*.epub
+

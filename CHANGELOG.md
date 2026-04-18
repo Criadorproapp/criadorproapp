@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.3.0-phase3-app-scripts-deploy
+
+- Scripts por app adicionados: `start:api`, `start:painel`, `start:all`.
+- Servidor dev do painel adicionado (`scripts/serve-painel.js`).
+- Orquestrador local API+painel adicionado (`scripts/start-all.js`).
+- Deploy preparado com `Dockerfile` e `.dockerignore`.
+- Guia operacional de deploy adicionado em `docs/DEPLOY.md`.
+
 ## v0.2.2-phase2-painel-bridge
 
 - Frontend principal movido para `apps/painel/`.

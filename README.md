@@ -6,10 +6,16 @@ Painel de criador com foco em genetica de aves, relatorios tecnicos e ferramenta
 
 1. Instale dependencias:
    - `npm install`
-2. Inicie o servidor:
+2. Inicie o app completo:
    - `npm start`
 3. Acesse:
    - `http://127.0.0.1:4173`
+
+## Scripts de desenvolvimento por app
+
+- `npm run start:api` - inicia somente API/backend em `:4173`.
+- `npm run start:painel` - inicia servidor estatico do painel em `:4180`.
+- `npm run start:all` - sobe API e painel em paralelo.
 
 ## Estado atual
 
@@ -35,3 +41,8 @@ Painel de criador com foco em genetica de aves, relatorios tecnicos e ferramenta
 - Releases: tags semanticas (`v1.0.0`, `v1.1.0`, ...)
 
 Detalhes em `docs/OPERACAO_RELEASE.md`.
+
+## Deploy
+
+- Docker pronto na raiz (`Dockerfile` + `.dockerignore`).
+- Guia de deploy em `docs/DEPLOY.md`.
