@@ -29,6 +29,11 @@ Manter uma base unica (monorepo) e separar responsabilidades por modulo.
 - Ajustar imports para usar modulo.
 - Manter mesma interface do frontend.
 
+Status atual:
+- `packages/genetics-engine` criado como camada de pacote.
+- Frontend principal ja consumindo o modulo via `packages/`.
+- Implementacao legada mantida como backend da camada para migracao segura.
+
 ### Fase 3 - Split de apps
 
 - Mover frontend para `apps/painel`.

@@ -1,5 +1,10 @@
-﻿import { calculateMultiLocus, runValidationSuite } from './calculadora_genetica/genetics_engine_v2.js';
-import { GENETICS_RULES, RINGNECK_CATALOG, SPECIES_ROADMAP } from './calculadora_genetica/genetics_data.js';
+﻿import {
+    GENETICS_RULES,
+    RINGNECK_CATALOG,
+    SPECIES_ROADMAP,
+    calculateMultiLocus,
+    runValidationSuite
+} from './packages/genetics-engine/index.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const galleryUrl = 'ringneck_mutations_gallery_1775852218576.png';
