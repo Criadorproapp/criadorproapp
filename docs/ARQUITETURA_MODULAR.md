@@ -32,7 +32,8 @@ Manter uma base unica (monorepo) e separar responsabilidades por modulo.
 Status atual:
 - `packages/genetics-engine` criado como camada de pacote.
 - Frontend principal ja consumindo o modulo via `packages/`.
-- Implementacao legada mantida como backend da camada para migracao segura.
+- Implementacao interna movida para `packages/genetics-engine/src/`.
+- Arquivos legados em `calculadora_genetica/` mantidos como bridge (re-export).
 
 ### Fase 3 - Split de apps
 

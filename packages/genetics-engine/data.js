@@ -1,8 +1,7 @@
-// Fase 2 (migracao incremental):
-// Dados geneticos exportados via pacote para desacoplar o frontend do caminho legado.
+// Fase 2:
+// Dados geneticos consumidos diretamente do pacote.
 export {
   GENETICS_RULES,
   RINGNECK_CATALOG,
   SPECIES_ROADMAP
-} from '../../calculadora_genetica/genetics_data.js';
-
+} from './src/genetics_data.js';

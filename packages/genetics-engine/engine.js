@@ -1,9 +1,8 @@
-// Fase 2 (migracao incremental):
-// Este modulo expõe o motor genetico por um caminho estavel em `packages/`.
-// A implementacao real permanece no legado por enquanto para evitar quebra.
+// Fase 2:
+// O pacote agora possui implementacao propria em `src/`.
+// Os caminhos legados serao mantidos como ponte de compatibilidade.
 export {
   calculateLegacyCockatiel,
   calculateMultiLocus,
   runValidationSuite
-} from '../../calculadora_genetica/genetics_engine_v2.js';
-
+} from './src/genetics_engine_v2.js';
