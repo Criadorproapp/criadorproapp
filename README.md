@@ -20,8 +20,9 @@ Painel de criador com foco em genetica de aves, relatorios tecnicos e ferramenta
 
 ## Estrutura principal
 
-- `index.html` / `style.css` / `script.js`: frontend principal.
-- `server.js`: backend local (API e busca em livros).
+- `apps/painel/`: frontend principal (HTML/CSS/JS).
+- `apps/api/server.js`: backend local (API e busca em livros).
+- `index.html` / `style.css` / `script.js`: bridges de compatibilidade.
 - `calculadora_genetica/`: motor e dados geneticos.
 - `vendor/`: bibliotecas locais.
 - `docs/`: operacao, arquitetura e release.

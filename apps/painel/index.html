@@ -1,0 +1,482 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criador Pro 5.0 - InteligÃªncia GenÃ©tica</title>
+    <link rel="stylesheet" href="./style.css">
+    <script src="../../vendor/qrcode.min.js"></script>
+    <script src="../../vendor/jspdf.umd.min.js"></script>
+    <script src="../../vendor/jspdf.plugin.autotable.min.js"></script>
+        <script src="../../config.js"></script>
+</head>
+<body class="dark-theme">
+
+<!-- LOGIN SCREEN OVERLAY -->
+<div id="login-overlay" class="login-overlay">
+    <div class="login-card glass">
+        <div class="login-header">
+            <div class="logo">ðŸ§¬ Criador<span>Pro</span></div>
+            <p>Plataforma de InteligÃªncia GenÃ©tica</p>
+        </div>
+        <div class="login-tabs">
+            <button class="tab-btn active" id="tab-login">Entrar</button>
+            <button class="tab-btn" id="tab-signup">Criar Conta</button>
+        </div>
+        <div class="login-form">
+            <div class="input-group">
+                <label>E-mail</label>
+                <input type="email" id="login-email" class="glass-input" placeholder="seu@email.com">
+            </div>
+            <div class="input-group">
+                <label>Senha</label>
+                <input type="password" id="login-password" class="glass-input" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢">
+            </div>
+            <button class="btn-primary full-width mt-3" id="btn-do-login">Acessar Sistema</button>
+            <p id="login-error" class="error-msg" style="display:none;"></p>
+        </div>
+        <div class="login-footer">
+            <p>Precisa de ajuda? <a href="#">Falar com suporte</a></p>
+        </div>
+    </div>
+</div>
+
+<div class="app-container" style="display:none;">
+
+    <!-- Sidebar -->
+    <aside class="sidebar glass">
+        <div class="sidebar-header">
+            <div class="logo">ðŸ§¬ Criador<span>Pro</span></div>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li data-module="dashboard" class="active"><a href="#"><i class="nav-icon">ðŸ </i> <span>Dashboard</span></a></li>
+                <li data-module="plantel"><a href="#"><i class="nav-icon">ðŸ¦œ</i> <span>Meu Plantel</span></a></li>
+                <li data-module="recintos"><a href="#"><i class="nav-icon">ðŸ—ï¸</i> <span>Recintos & QR</span></a></li>
+                <li data-module="genetica"><a href="#"><i class="nav-icon">ðŸ§¬</i> <span>Calculadora</span></a></li>
+                <li data-module="identificador"><a href="#"><i class="nav-icon">ðŸ”</i> <span>Identificador</span></a></li>
+                <li data-module="vet"><a href="#"><i class="nav-icon">ðŸ¥</i> <span>Vet AI</span></a></li>
+                <li data-module="marketing"><a href="#"><i class="nav-icon">ðŸ“¢</i> <span>Marketing</span></a></li>
+                <li data-module="financeiro"><a href="#"><i class="nav-icon">ðŸ“Š</i> <span>Financeiro</span></a></li>
+                <li data-module="academia"><a href="#"><i class="nav-icon">ðŸ“š</i> <span>Academia</span></a></li>
+                <li data-module="admin"><a href="#"><i class="nav-icon">âš™ï¸</i> <span>Administrativo</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main -->
+    <main class="content-area">
+        <header class="welcome-banner glass">
+            <div class="greeting">
+                <h1>OlÃ¡, <span id="user-name-display">Criador</span> ðŸ‘‹</h1>
+                <p>Qual a meta do plantel para hoje?</p>
+            </div>
+        </header>
+
+        <!-- DASHBOARD -->
+        <section id="dashboard" class="module active">
+            <div class="stats-grid">
+                <div class="stat-card glass"><h3>Total de Aves</h3><p id="dash-aves">â€”</p></div>
+                <div class="stat-card glass"><h3>Casais em Postura</h3><p id="dash-pares">â€”</p></div>
+                <div class="stat-card glass"><h3>Saldo Financeiro</h3><p id="dash-saldo">â€”</p></div>
+            </div>
+        </section>
+
+        <!-- PLANTEL -->
+        <section id="plantel" class="module">
+            <div class="module-header flex-header">
+                <div>
+                    <h1>GestÃ£o de Aves</h1>
+                    <p>Controle do Plantel Ativo do CriatÃ³rio.</p>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <button class="btn-primary" id="btn-export-csv" style="background: var(--sidebar-bg); color: white; border: 1px solid var(--primary);">ðŸ“¥ Baixar CSV</button>
+                        <button class="btn-primary" id="btn-export-pdf" style="background: var(--sidebar-bg); color: white; border: 1px solid #e74c3c;">ðŸ–¨ï¸ PDF Oficial</button>
+                        <button class="btn-primary" id="btn-add-ave">+ Cadastrar Ave</button>
+                    </div>
+                    <input type="text" id="busca-plantel" class="glass-input" placeholder="Buscar por anilha, espÃ©cie, mutaÃ§Ã£o ou sexo" style="margin:0;min-width:280px;">
+                </div>
+            </div>
+
+            <!-- Modal cadastro ave -->
+            <div id="modal-add-ave" class="glass p-4 mt-3" style="display:none;border:1px solid var(--primary);">
+                <h3>Novo Registro</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <div><label>Anilha</label><input type="text" id="add-anilha" class="glass-input" placeholder="Ex: RN-2024-001"></div>
+                    <div><label>EspÃ©cie</label>
+                        <select id="add-especie" class="glass-input">
+                            <option value="Ringneck">Ringneck</option>
+                            <option value="Calopsita">Calopsita</option>
+                        </select>
+                    </div>
+                    <div><label>MutaÃ§Ã£o</label><input type="text" id="add-mutacao" class="glass-input" placeholder="Ex: Azul Sky"></div>
+                    <div><label>Sexo</label>
+                        <select id="add-sexo" class="glass-input">
+                            <option value="Macho">â™‚ï¸ Macho</option>
+                            <option value="FÃªmea">â™€ï¸ FÃªmea</option>
+                            <option value="Indefinido">â“ Indefinido</option>
+                        </select>
+                    </div>
+                    <div><label>Nascimento</label><input type="date" id="add-nascimento" class="glass-input"></div>
+                    <div><label>Recinto</label>
+                        <select id="add-recinto-select" class="glass-input">
+                            <option value="">â€” Sem recinto â€”</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:10px;">
+                    <button class="btn-primary" id="btn-save-ave" style="flex:1;">Salvar</button>
+                    <button class="btn-primary" id="btn-cancel-ave" style="flex:1;background:#e74c3c;color:white;">Cancelar</button>
+                </div>
+            </div>
+
+            <div class="glass table-container mt-3">
+                <table class="data-table" id="plantel-table">
+                    <thead><tr><th>Anilha</th><th>EspÃ©cie</th><th>MutaÃ§Ã£o</th><th>Sexo</th><th>Nascimento</th><th>Recinto</th><th>Status</th><th>AÃ§Ãµes</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- RECINTOS & QR -->
+        <section id="recintos" class="module">
+            <div class="module-header flex-header">
+                <div>
+                    <h1>OrganizaÃ§Ã£o de Recintos</h1>
+                    <p>Gerencie viveiros e escanei os QR Codes para identificaÃ§Ã£o rÃ¡pida.</p>
+                </div>
+                <button class="btn-primary" id="btn-add-recinto">+ Criar Recinto</button>
+            </div>
+
+            <!-- Modal novo recinto -->
+            <div id="modal-add-recinto" class="glass p-4 mt-3" style="display:none;border:1px solid var(--primary);">
+                <h3>Novo Recinto</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <div><label>Nome</label><input type="text" id="rec-nome" class="glass-input" placeholder="Ex: Viveiro B"></div>
+                    <div><label>Tipo</label>
+                        <select id="rec-tipo" class="glass-input">
+                            <option value="Matrizes">Matrizes</option>
+                            <option value="Filhotes">Filhotes</option>
+                            <option value="Quarentena">Quarentena</option>
+                            <option value="Voadeira">Voadeira</option>
+                        </select>
+                    </div>
+                    <div style="grid-column:1/-1"><label>DescriÃ§Ã£o</label><input type="text" id="rec-desc" class="glass-input" placeholder="DescriÃ§Ã£o opcional"></div>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:10px;">
+                    <button class="btn-primary" id="btn-save-recinto" style="flex:1;">Salvar</button>
+                    <button class="btn-primary" id="btn-cancel-recinto" style="flex:1;background:#e74c3c;color:white;">Cancelar</button>
+                </div>
+            </div>
+
+            <div class="recintos-grid mt-4" id="recintos-grid-container"
+                 style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;"></div>
+        </section>
+
+        <!-- CALCULADORA GENÃ‰TICA PRO v2 -->
+        <section id="genetica" class="module">
+            <div class="module-header flex-header">
+                <div>
+                    <h1>Calculadora GenÃ©tica Pro</h1>
+                    <p>Motor mendeliano multi-locus v2.0</p>
+                </div>
+                <!-- MENU GERAL DE AÃ‡Ã•ES -->
+                <div class="actions-menu-calc">
+                    <button class="btn-action glass" id="btn-export-pdf-calc">ðŸ“„ Gerar PDF Oficial</button>
+                    <button class="btn-action glass" id="btn-export-txt-calc">ðŸ“ Salvar TXT</button>
+                    <button class="btn-action glass" id="btn-run-tests-calc">ðŸ§ª Validar Motor</button>
+                </div>
+            </div>
+
+            <!-- TABS DE NAVEGAÃ‡ÃƒO -->
+            <div class="calc-tabs-nav mb-3">
+                <button class="tab-btn-calc active" data-calc-tab="cruzamento">Cruzamento</button>
+                <button class="tab-btn-calc" data-calc-tab="validacao">ValidaÃ§Ã£o TÃ©cnica</button>
+                <button class="tab-btn-calc" data-calc-tab="roadmap">PrÃ³ximas EspÃ©cies</button>
+            </div>
+
+            <!-- CONTEÃšDO DAS ABAS -->
+            <div id="tab-cruzamento" class="calc-tab-content active">
+                <div class="glass genetics-calculator">
+                    <div class="calc-top">
+                        <div class="bird-select"><label>Especie</label>
+                            <select id="species-select" class="glass-input">
+                                <option value="ringneck">Ringneck (Completo)</option>
+                                <option value="calopsita">Calopsita (Modo Multiplo)</option>
+                            </select>
+                        </div>
+                        <div class="bird-select"><label>Macho (Pai)</label>
+                            <div id="macho-mutations-chips" class="mutation-chips-container glass">Carregando painel de mutacoes...</div>
+                        </div>
+                        <div class="bird-select"><label>Femea (Mae)</label>
+                            <div id="femea-mutations-chips" class="mutation-chips-container glass">Carregando painel de mutacoes...</div>
+                        </div>
+                    </div>
+                    <div class="blue-series-panel glass mt-3">
+                        <h4>Serie Azul (Planilhas Ringneck)</h4>
+                        <div class="blue-series-grid">
+                            <div>
+                                <label>Macho - Serie Azul</label>
+                                <select id="blue-series-male" class="glass-input"></select>
+                            </div>
+                            <div>
+                                <label>Femea - Serie Azul</label>
+                                <select id="blue-series-female" class="glass-input"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-primary full-width mt-3" id="btn-cruzamento-v2">Calcular Cruzamento Multi-Locus</button>
+                    <div class="calc-results-v2 mt-4" id="results-grid-v2"></div>
+                    <button class="btn-primary btn-pdf-download full-width mt-3" id="btn-download-pdf-calc" disabled>📥 Baixar PDF Completo</button>
+                    <div class="ringneck-catalog-panel glass mt-4">
+                        <div class="ringneck-catalog-head">
+                            <h4>Catalogo Oficial Ringneck</h4>
+                            <span id="ringneck-catalog-meta"></span>
+                        </div>
+                        <input id="ringneck-catalog-search" type="text" class="glass-input" placeholder="Buscar cor ou mutacao..." />
+                        <div id="ringneck-catalog-groups" class="ringneck-catalog-groups"></div>
+                    </div>
+                    <div class="genetics-chat-panel glass mt-4">
+                        <div class="ringneck-catalog-head">
+                            <h4>Agente Genetico (Pausado)</h4>
+                            <span>Desativado temporariamente</span>
+                        </div>
+                        <div class="catalog-empty">O chat foi pausado para replanejamento da integracao.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-validacao" class="calc-tab-content">
+                <div class="glass p-4">
+                    <h3>SuÃ­te de ValidaÃ§Ã£o por Planilha</h3>
+                    <p class="text-muted small mb-3">Testes automatizados comparando o motor com as planilhas oficiais (Arlequim, Cleartail, Sex-linked).</p>
+                    <div id="validation-results-calc"></div>
+                </div>
+            </div>
+
+            <div id="tab-roadmap" class="calc-tab-content">
+                <div class="glass p-4">
+                    <h3>ExpansÃ£o de EspÃ©cies</h3>
+                    <p class="text-muted small mb-3">Roadmap de calibraÃ§Ã£o para novos animais.</p>
+                    <div id="species-roadmap-calc" class="roadmap-grid"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- IDENTIFICADOR VISUAL -->
+        <section id="identificador" class="module">
+            <div class="module-header"><h1>Identificador Visual</h1></div>
+            <div class="identification-grid">
+                <div class="glass step-card">
+                    <h3>Mapeamento Visual</h3>
+                    <label>ðŸ‘ï¸ Olhos</label>
+                    <select id="id-olhos" class="glass-input mb-2">
+                        <option value="dark">Escuros / Marrons</option>
+                        <option value="red">Vermelhos / Rubi</option>
+                    </select>
+                    <label>ðŸ‘¤ CabeÃ§a / Colar</label>
+                    <select id="id-cabeca" class="glass-input mb-2">
+                        <option value="normal">Normal</option>
+                        <option value="cb">Cara Branca</option>
+                        <option value="buttercup">CabeÃ§a Amarela (Buttercup)</option>
+                    </select>
+                    <label>ðŸŽ¨ ColoraÃ§Ã£o do Dorso</label>
+                    <select id="id-dorso" class="glass-input mb-2">
+                        <option value="verde">Verde</option>
+                        <option value="azul">Azul / Sky</option>
+                        <option value="cinza">Cinza</option>
+                        <option value="indigo">Ãndigo / Azul profundo</option>
+                        <option value="violeta">Violeta / Roxo</option>
+                    </select>
+                    <label>ðŸ’ Colar (Ring)</label>
+                    <select id="id-anel" class="glass-input mb-3">
+                        <option value="ausente">Ausente</option>
+                        <option value="amarelo">Amarelo / Dourado</option>
+                        <option value="normal">Normal / Preto</option>
+                    </select>
+                    <button class="btn-primary full-width" id="btn-identificar">ðŸ” Gerar Laudo TÃ©cnico</button>
+                    <div class="mt-4"><img src="guia_marcadores_ringneck_1775851296080.png" class="img-fluid rounded border-glass" style="width:100%;border-radius:8px;" onerror="this.style.display='none'"></div>
+                </div>
+                <div class="glass result-box" id="id-result-panel">
+                    <div class="id-placeholder" style="color:var(--text-muted);text-align:center;padding:2rem;">O laudo de perÃ­cia aparecerÃ¡ aqui.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VET AI -->
+        <section id="vet" class="module">
+            <div class="vet-interface glass">
+                <div class="agent-id">ðŸ¥ Vet Agent Pro</div>
+                <div class="chat-container" id="vet-chat-history"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="vet-input" class="glass-input" placeholder="DÃºvida clÃ­nica..." style="margin:0;flex:1;">
+                    <button class="btn-primary" id="btn-send-vet">Enviar</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- MARKETING -->
+        <section id="marketing" class="module">
+            <div class="glass p-4 mt-3">
+                <h1>Gerador de AnÃºncios</h1>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:1rem;">
+                    <div>
+                        <label>EspÃ©cie</label>
+                        <select id="mkt-especie" class="glass-input">
+                            <option>Ringneck</option>
+                            <option>Calopsita</option>
+                            <option>Papagaio</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>MutaÃ§Ã£o / Variedade</label>
+                        <input type="text" id="mkt-mutacao" class="glass-input" placeholder="Ex: Azul Sky">
+                    </div>
+                </div>
+                <button class="btn-primary full-width mt-3" id="btn-gen-marketing">âš¡ Criar AnÃºncio</button>
+                <div id="mkt-result" class="mt-4"></div>
+            </div>
+        </section>
+
+        <!-- FINANCEIRO -->
+        <section id="financeiro" class="module">
+            <div class="module-header flex-header">
+                <h1>Financeiro</h1>
+                <button class="btn-primary" id="btn-add-financa">+ LanÃ§amento</button>
+            </div>
+
+            <!-- Modal lanÃ§amento -->
+            <div id="modal-add-financa" class="glass p-4 mt-3" style="display:none;border:1px solid var(--primary);">
+                <h3>Novo LanÃ§amento</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <div><label>Tipo</label>
+                        <select id="fin-tipo" class="glass-input">
+                            <option value="entrada">â–² Entrada</option>
+                            <option value="saida">â–¼ SaÃ­da</option>
+                        </select>
+                    </div>
+                    <div><label>Data</label><input type="date" id="fin-data" class="glass-input"></div>
+                    <div style="grid-column:1/-1"><label>DescriÃ§Ã£o</label><input type="text" id="fin-desc" class="glass-input" placeholder="Ex: Venda Ringneck Azul"></div>
+                    <div><label>Valor (R$)</label><input type="number" id="fin-valor" class="glass-input" placeholder="0.00" min="0" step="0.01"></div>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:10px;">
+                    <button class="btn-primary" id="btn-save-financa" style="flex:1;">Salvar</button>
+                    <button class="btn-primary" id="btn-cancel-financa" style="flex:1;background:#e74c3c;color:white;">Cancelar</button>
+                </div>
+            </div>
+
+            <div class="stats-grid mt-3" style="grid-template-columns:repeat(3,1fr);">
+                <div class="stat-card glass"><h3>Entradas</h3><p id="fin-entradas" style="color:#2ecc71">â€”</p></div>
+                <div class="stat-card glass"><h3>SaÃ­das</h3><p id="fin-saidas" style="color:#e74c3c">â€”</p></div>
+                <div class="stat-card glass"><h3>Saldo</h3><p id="fin-saldo">â€”</p></div>
+            </div>
+
+            <div class="glass table-container mt-3">
+                <table class="data-table" id="fin-table">
+                    <thead><tr><th>Data</th><th>Tipo</th><th>DescriÃ§Ã£o</th><th>Valor</th><th></th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ACADEMIA -->
+        <section id="academia" class="module">
+            <div class="academy-layout">
+                <div class="glass">
+                    <h3>ðŸ“š Biblioteca TÃ©cnica</h3>
+                    <div class="book-grid" style="margin-top:1rem;" id="library-grid">
+                        <!-- Livros serÃ£o gerados aqui -->
+                    </div>
+                </div>
+                <div class="glass">
+                    <h3>ðŸŽ“ Tutor IA</h3>
+                    <div class="chat-container small-chat" id="tutor-chat-history" style="height:350px;"></div>
+                    <input type="text" id="tutor-input" class="glass-input mt-2" placeholder="Pressione Enter para perguntar ao tutor...">
+                </div>
+            </div>
+        </section>
+
+        <!-- MODAL LEITOR DE LIVRO -->
+        <div id="modal-book-reader" class="modal-overlay" style="display:none;">
+            <div class="modal-content glass book-reader-content">
+                <div class="modal-header">
+                    <h2 id="book-title">TÃ­tulo do Livro</h2>
+                    <button class="btn-close" id="btn-close-reader">Ã—</button>
+                </div>
+                <div class="modal-body book-body">
+                    <div class="pdf-placeholder glass">
+                        <p>SimulaÃ§Ã£o do Livro Digital</p>
+                        <div class="book-page">
+                            <h4 id="page-content-title">Carregando conteÃºdo especializado...</h4>
+                            <p id="page-content-text">Este mÃ³dulo integra os manuais de genÃ©tica e parasitologia do criatÃ³rio.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-primary" id="btn-use-vet">ðŸ¥ Usar no Vet AI</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PERFIL DO CRIATÃ“RIO -->
+        <section id="admin" class="module">
+            <div class="glass p-4 profile-container">
+                <div class="module-header">
+                    <h1>Meu CriatÃ³rio</h1>
+                    <p>Configure as informaÃ§Ãµes oficiais que aparecerÃ£o nos seus relatÃ³rios e no sistema.</p>
+                </div>
+                
+                <div class="profile-grid mt-4">
+                    <div class="profile-photo-section">
+                        <div class="logo-preview-box glass" id="logo-preview">
+                            <span>SVG/PNG Logo</span>
+                        </div>
+                        <label>URL do Logotipo</label>
+                        <input type="text" id="admin-logo-url" class="glass-input" placeholder="https://link-da-sua-imagem.png">
+                        <p class="small text-muted">A imagem serÃ¡ exibida no menu lateral e nos PDFs.</p>
+                    </div>
+
+                    <div class="profile-data-section">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                            <div class="input-group">
+                                <label>Nome do CriatÃ³rio</label>
+                                <input type="text" id="admin-criatorio-nome" class="glass-input" placeholder="Ex: CriatÃ³rio Pingo D'Ouro">
+                            </div>
+                            <div class="input-group">
+                                <label>ResponsÃ¡vel TÃ©cnico</label>
+                                <input type="text" id="admin-responsavel" class="glass-input" placeholder="Seu nome completo">
+                            </div>
+                            <div class="input-group">
+                                <label>Registro IBAMA / CTF</label>
+                                <input type="text" id="admin-ibama" class="glass-input" placeholder="NÃºmero do registro">
+                            </div>
+                            <div class="input-group">
+                                <label>CPF ou CNPJ</label>
+                                <input type="text" id="admin-doc" class="glass-input" placeholder="000.000.000-00">
+                            </div>
+                            <div style="grid-column: 1 / -1;" class="input-group">
+                                <label>EndereÃ§o Completo</label>
+                                <input type="text" id="admin-endereco" class="glass-input" placeholder="Rua, NÃºmero, Cidade - UF">
+                            </div>
+                            <div style="grid-column: 1 / -1;" class="input-group">
+                                <label>Foco de CriaÃ§Ã£o (Principais EspÃ©cies)</label>
+                                <input type="text" id="admin-foco" class="glass-input" placeholder="Ex: Ringneck, CabeÃ§a de Ameixa, Calopsitas">
+                            </div>
+                        </div>
+                        <button class="btn-primary mt-3 full-width" id="btn-save-admin">Salvar Perfil Oficial</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+<script type="module" src="./script.js"></script>
+</body>
+</html>
+
+
+
+
+

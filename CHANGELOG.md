@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.2-phase2-painel-bridge
+
+- Frontend principal movido para `apps/painel/`.
+- Arquivo raiz `index.html` convertido para redirecionamento para `/apps/painel/`.
+- Arquivos raiz `style.css` e `script.js` convertidos para bridge.
+- Caminhos internos do painel ajustados para `vendor/`, `config.js` e `packages/`.
+
 ## v0.2.1-phase2-api-bridge
 
 - Backend principal movido para `apps/api/server.js`.

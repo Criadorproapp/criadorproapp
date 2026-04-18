@@ -36,6 +36,8 @@ Status atual:
 - Arquivos legados em `calculadora_genetica/` mantidos como bridge (re-export).
 - Backend HTTP movido para `apps/api/server.js`.
 - `server.js` na raiz mantido como bridge para preservar `npm start`.
+- Frontend principal movido para `apps/painel/`.
+- `index.html`, `style.css` e `script.js` na raiz mantidos como bridges de compatibilidade.
 
 ### Fase 3 - Split de apps
 
