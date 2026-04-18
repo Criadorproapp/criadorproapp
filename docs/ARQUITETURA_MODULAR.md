@@ -34,6 +34,8 @@ Status atual:
 - Frontend principal ja consumindo o modulo via `packages/`.
 - Implementacao interna movida para `packages/genetics-engine/src/`.
 - Arquivos legados em `calculadora_genetica/` mantidos como bridge (re-export).
+- Backend HTTP movido para `apps/api/server.js`.
+- `server.js` na raiz mantido como bridge para preservar `npm start`.
 
 ### Fase 3 - Split de apps
 

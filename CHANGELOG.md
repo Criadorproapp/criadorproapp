@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.1-phase2-api-bridge
+
+- Backend principal movido para `apps/api/server.js`.
+- `server.js` raiz convertido para bridge de compatibilidade.
+- Script `start:api` adicionado no `package.json`.
+
 ## v0.2.0-phase2-internalized
 
 - Motor genetico movido para `packages/genetics-engine/src`.
