@@ -1,0 +1,168 @@
+{
+  "version": "psitacideos-v1",
+  "generated_at": "2026-04-16T02:37:43.103Z",
+  "source_priority": [
+    "Biblioteca Interna (Guia Mutacoes Psitacideos)",
+    "Biblioteca Interna (Planilhas Ring Neck)"
+  ],
+  "assumptions": [
+    "Regra por mutacao modelada para motor base v1 com foco em psitacideos.",
+    "Algumas mutacoes devem receber calibracao por especie na v2.",
+    "Quando faltarem evidencias estruturadas, manter confidence medio e exigir validacao.",
+    "Para mutacoes ligadas ao sexo, sexo dos parentais e obrigatorio."
+  ],
+  "rules": [
+    {
+      "id": "opalino",
+      "mutation": "Opalino",
+      "aliases": [
+        "opaline"
+      ],
+      "inheritance": "sex_linked_recessive",
+      "chromosome": "Z",
+      "priority": "high",
+      "confidence": "high",
+      "species_scope": [
+        "psittacidae",
+        "ringneck"
+      ],
+      "evidence_urls": [
+        "file:///E:/02_Cursos_e_Estudos/livros/planilhas de acasalameno ring/planilha-OPALINO_E_PORTADORES.pdf"
+      ],
+      "notes": "Regra base para calculadora: tratar macho ZZ e femea ZW; femea nao e portadora silenciosa em locus Z.",
+      "engine_flags": [
+        "requires_sex_input",
+        "show_carrier_male"
+      ],
+      "validation_status": "active_v1"
+    },
+    {
+      "id": "pallid",
+      "mutation": "Pallid",
+      "aliases": [
+        "pallids"
+      ],
+      "inheritance": "sex_linked_recessive",
+      "chromosome": "Z",
+      "priority": "high",
+      "confidence": "high",
+      "species_scope": [
+        "psittacidae",
+        "ringneck"
+      ],
+      "evidence_urls": [
+        "file:///E:/02_Cursos_e_Estudos/livros/planilhas de acasalameno ring/planilha-pallids.pdf"
+      ],
+      "notes": "Mesmo modelo de segregacao ligada ao sexo usado em opalino.",
+      "engine_flags": [
+        "requires_sex_input",
+        "show_carrier_male"
+      ],
+      "validation_status": "active_v1"
+    },
+    {
+      "id": "arlequim_dominante",
+      "mutation": "Arlequim Dominante",
+      "aliases": [
+        "harlequin dominant"
+      ],
+      "inheritance": "autosomal_dominant",
+      "priority": "high",
+      "confidence": "medium_high",
+      "species_scope": [
+        "psittacidae",
+        "ringneck"
+      ],
+      "evidence_urls": [
+        "file:///E:/02_Cursos_e_Estudos/livros/planilhas de acasalameno ring/planilha-ARLEQUIN-DOMINANTE.pdf"
+      ],
+      "example_cross": {
+        "pairing": "Vv x vv",
+        "expected": {
+          "visual_mutation": "50.0%",
+          "visual_normal": "50.0%"
+        }
+      },
+      "notes": "Heterozigoto visual esperado em media de 50% quando cruzado com normal.",
+      "engine_flags": [
+        "allow_dominant_heterozygous"
+      ],
+      "validation_status": "active_v1"
+    },
+    {
+      "id": "arlequim_recessivo",
+      "mutation": "Arlequim Recessivo",
+      "aliases": [
+        "harlequin recessive"
+      ],
+      "inheritance": "autosomal_recessive",
+      "priority": "high",
+      "confidence": "medium_high",
+      "species_scope": [
+        "psittacidae",
+        "ringneck"
+      ],
+      "evidence_urls": [
+        "file:///E:/02_Cursos_e_Estudos/livros/planilhas de acasalameno ring/planilha-ARLEQUIN-RECESSIVO.pdf"
+      ],
+      "example_cross": {
+        "pairing": "Rr x Rr",
+        "expected": {
+          "visual_recessive": "25.0%",
+          "carriers": "50.0%",
+          "normal_non_carrier": "25.0%"
+        }
+      },
+      "notes": "Portadores devem ser exibidos explicitamente no resultado da calculadora.",
+      "engine_flags": [
+        "show_carriers"
+      ],
+      "validation_status": "active_v1"
+    },
+    {
+      "id": "cleartail",
+      "mutation": "Cleartail",
+      "aliases": [
+        "clear tail"
+      ],
+      "inheritance": "autosomal_recessive",
+      "priority": "high",
+      "confidence": "medium",
+      "species_scope": [
+        "psittacidae",
+        "ringneck"
+      ],
+      "evidence_urls": [
+        "file:///E:/02_Cursos_e_Estudos/livros/planilhas de acasalameno ring/planilha-CLEARTAIL_E_PORTADORES.pdf"
+      ],
+      "notes": "Validar nomenclatura local de portador no front para consistencia com criatorio.",
+      "engine_flags": [
+        "show_carriers"
+      ],
+      "validation_status": "active_v1"
+    },
+    {
+      "id": "violeta",
+      "mutation": "Violeta",
+      "aliases": [
+        "violet"
+      ],
+      "inheritance": "autosomal_incomplete_dominant",
+      "priority": "high",
+      "confidence": "medium",
+      "species_scope": [
+        "psittacidae",
+        "ringneck",
+        "multi_species_psittacidae"
+      ],
+      "evidence_urls": [
+        "file:///E:/02_Cursos_e_Estudos/livros/planilhas de acasalameno ring/planilha-violetas.pdf"
+      ],
+      "notes": "Motor deve distinguir dose simples e dupla quando o fenotipo diferir por intensidade.",
+      "engine_flags": [
+        "support_single_double_factor"
+      ],
+      "validation_status": "active_v1"
+    }
+  ]
+}

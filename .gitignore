@@ -1,0 +1,41 @@
+﻿node_modules/
+config.js
+.env
+.env.local
+*.log
+
+# Local/editor
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+
+# Build/runtime
+dist/
+build/
+coverage/
+tmp/
+*.tmp
+*.bak
+backup-codigo-*.zip
+_release_repo/
+_acl_test/
+
+# Large knowledge base and binaries (keep local, do not version)
+livros/
+livro/
+IA FERRAMENTAS/
+claude/
+*.pdf
+*.rar
+*.zip
+*.7z
+*.exe
+*.ppt
+*.pptx
+*.doc
+*.docx
+*.epub
+
+# Local notes/secrets
+senah supabase.txt

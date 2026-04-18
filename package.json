@@ -1,0 +1,13 @@
+{
+  "name": "criador-pro-trabalho",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check script.js",
+    "preflight": "powershell -ExecutionPolicy Bypass -File ./scripts/preflight.ps1"
+  },
+  "devDependencies": {
+    "pdf-parse": "^2.4.5",
+    "pdf2json": "^4.0.2"
+  }
+}
