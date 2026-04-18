@@ -1,4 +1,4 @@
-﻿import {
+import {
     GENETICS_RULES,
     RINGNECK_CATALOG,
     SPECIES_ROADMAP,
@@ -24,8 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const SpeciesMutations = {
-        ringneck: ['Verde Ancestral', 'Azul Sky', 'Cinza', 'Lutino', 'Albino', 'Opalino', 'Cleartail', 'Violeta SF', 'Ãndigo', 'Cobalto', 'Violeta DF'],
-        calopsita: ['Cinza', 'Lutino', 'Arlequim', 'Cara Branca', 'Canela', 'PÃ©rola', 'Albino']
+        ringneck: ['Verde Ancestral', 'Azul Sky', 'Cinza', 'Lutino', 'Albino', 'Opalino', 'Cleartail', 'Violeta SF', 'Índigo', 'Cobalto', 'Violeta DF'],
+        calopsita: ['Cinza', 'Lutino', 'Arlequim', 'Cara Branca', 'Canela', 'Pérola', 'Albino']
     };
 
     const ringneckGenetica = {
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Lutino': { blue: 0, ino: 2, grey: 0, opaline: 0, indigo: 0, violet: 0 },
         'Albino': { blue: 2, ino: 2, grey: 0, opaline: 0, indigo: 0, violet: 0 },
         'Opalino': { blue: 0, ino: 0, grey: 0, opaline: 2, indigo: 0, violet: 0 },
-        'Ãndigo': { blue: 0, ino: 0, grey: 0, opaline: 0, indigo: 2, violet: 0 },
+        'Índigo': { blue: 0, ino: 0, grey: 0, opaline: 0, indigo: 2, violet: 0 },
         'Cobalto': { blue: 1, ino: 0, grey: 0, opaline: 0, indigo: 2, violet: 0 },
         'Violeta SF': { blue: 1, ino: 0, grey: 0, opaline: 0, indigo: 0, violet: 1 },
         'Violeta DF': { blue: 2, ino: 0, grey: 0, opaline: 0, indigo: 0, violet: 2 },
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Arlequim': { ino: 0, cb: 0, canela: 0, opaline: 2 },
         'Cara Branca': { ino: 0, cb: 2, canela: 0, opaline: 0 },
         'Canela': { ino: 0, cb: 0, canela: 2, opaline: 0 },
-        'PÃ©rola': { ino: 0, cb: 0, canela: 0, opaline: 1 },
+        'Pérola': { ino: 0, cb: 0, canela: 0, opaline: 1 },
         'Albino': { ino: 2, cb: 2, canela: 0, opaline: 0 }
     };
 
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const raw = localStorage.getItem(key);
             return raw ? JSON.parse(raw) : fallback;
         } catch (error) {
-            console.warn(`NÃ£o foi possÃ­vel ler ${key} do armazenamento local.`, error);
+            console.warn(`Não foi possível ler ${key} do armazenamento local.`, error);
             return fallback;
         }
     };
@@ -147,15 +147,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (this.aves.length === 0) {
                 this.aves = [
                     normalizeAve({ id: '1', anilha: 'RN-2024-001', especie: 'Ringneck', mutacao: 'Azul Sky', sexo: 'Macho', status: 'Ativo', nascimento: '2024-01-15', recinto: 'R1' }),
-                    normalizeAve({ id: '2', anilha: 'RN-2024-002', especie: 'Ringneck', mutacao: 'Verde Ancestral', sexo: 'FÃªmea', status: 'Ativo', nascimento: '2024-02-10', recinto: 'R1' }),
-                    normalizeAve({ id: '3', anilha: 'CAL-2023-442', especie: 'Calopsita', mutacao: 'PÃ©rola', sexo: 'FÃªmea', status: 'Ativo', nascimento: '2023-06-20', recinto: 'R2' })
+                    normalizeAve({ id: '2', anilha: 'RN-2024-002', especie: 'Ringneck', mutacao: 'Verde Ancestral', sexo: 'Fêmea', status: 'Ativo', nascimento: '2024-02-10', recinto: 'R1' }),
+                    normalizeAve({ id: '3', anilha: 'CAL-2023-442', especie: 'Calopsita', mutacao: 'Pérola', sexo: 'Fêmea', status: 'Ativo', nascimento: '2023-06-20', recinto: 'R2' })
                 ];
                 this.saveAves();
             }
             if (this.recintos.length === 0) {
                 this.recintos = [
-                    normalizeRecinto({ id: 'R1', nome: 'Viveiro Matrizes A', tipo: 'Matrizes', descricao: 'Aves em reproduÃ§Ã£o ativa' }),
-                    normalizeRecinto({ id: 'R2', nome: 'Voadeira Filhotes', tipo: 'Filhotes', descricao: 'Recinto de sociabilizaÃ§Ã£o' }),
+                    normalizeRecinto({ id: 'R1', nome: 'Viveiro Matrizes A', tipo: 'Matrizes', descricao: 'Aves em reprodução ativa' }),
+                    normalizeRecinto({ id: 'R2', nome: 'Voadeira Filhotes', tipo: 'Filhotes', descricao: 'Recinto de sociabilização' }),
                     normalizeRecinto({ id: 'R3', nome: 'Setor Quarentena', tipo: 'Quarentena', descricao: 'Isolamento preventivo' })
                 ];
                 this.saveRecintos();
@@ -163,8 +163,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (this.financas.length === 0) {
                 this.financas = [
                     normalizeFinanca({ id: 'F1', tipo: 'entrada', descricao: 'Venda RN Azul Sky', valor: 1200, data: '2024-03-01' }),
-                    normalizeFinanca({ id: 'F2', tipo: 'saida', descricao: 'RaÃ§Ã£o mensal', valor: 350, data: '2024-03-05' }),
-                    normalizeFinanca({ id: 'F3', tipo: 'entrada', descricao: 'Venda Calopsita PÃ©rola', valor: 450, data: '2024-03-12' }),
+                    normalizeFinanca({ id: 'F2', tipo: 'saida', descricao: 'Ração mensal', valor: 350, data: '2024-03-05' }),
+                    normalizeFinanca({ id: 'F3', tipo: 'entrada', descricao: 'Venda Calopsita Pérola', valor: 450, data: '2024-03-12' }),
                     normalizeFinanca({ id: 'F4', tipo: 'saida', descricao: 'Medicamentos', valor: 180, data: '2024-03-18' })
                 ];
                 this.saveFinancas();
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const sidebarLogo = document.querySelector('.sidebar-header .logo');
                 if (sidebarLogo) {
                     const [firstWord, ...rest] = this.perfil.nome_criatorio.split(' ');
-                    sidebarLogo.innerHTML = `ðŸ§¬ ${escapeHtml(firstWord || 'Criador')}<span>${escapeHtml(rest.join(' '))}</span>`;
+                    sidebarLogo.innerHTML = `${escapeHtml(firstWord || 'Criador')}<span>${escapeHtml(rest.join(' '))}</span>`;
                 }
             }
 
@@ -187,10 +187,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (logoUrl) {
                     const image = document.createElement('img');
                     image.src = logoUrl;
-                    image.alt = 'Logo do criatÃ³rio';
+                    image.alt = 'Logo do criatório';
                     image.loading = 'lazy';
                     image.addEventListener('error', () => {
-                        preview.textContent = 'Logo invÃ¡lida';
+                        preview.textContent = 'Logo inválida';
                     });
                     preview.appendChild(image);
                 } else {
@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     this.applyProfile();
                 }
             } catch (error) {
-                console.error('Erro na sincronizaÃ§Ã£o com a nuvem:', error);
+                console.error('Erro na sincronização com a nuvem:', error);
             }
         }
 
@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         updated_at: new Date().toISOString()
                     });
                 } catch (error) {
-                    console.error('NÃ£o foi possÃ­vel salvar o perfil na nuvem.', error);
+                    console.error('Não foi possível salvar o perfil na nuvem.', error);
                 }
             }
         }
@@ -273,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }]);
                     await this.syncWithCloud();
                 } catch (error) {
-                    console.error('NÃ£o foi possÃ­vel sincronizar a ave com a nuvem.', error);
+                    console.error('Não foi possível sincronizar a ave com a nuvem.', error);
                 }
             }
             return localAve;
@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     await supabase.from('aves').delete().eq('user_id', this.session.user.id).eq('anilha', ave.anilha);
                 } catch (error) {
-                    console.error('NÃ£o foi possÃ­vel remover a ave na nuvem.', error);
+                    console.error('Não foi possível remover a ave na nuvem.', error);
                 }
             }
         }
@@ -322,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
         getTotais() {
             const total = this.aves.length;
             const machos = this.aves.filter((ave) => ave.sexo === 'Macho').length;
-            const femeas = this.aves.filter((ave) => ave.sexo === 'FÃªmea').length;
+            const femeas = this.aves.filter((ave) => ave.sexo === 'Fêmea').length;
             const pares = Math.min(machos, femeas);
             const entradas = this.financas.filter((item) => item.tipo === 'entrada').reduce((sum, item) => sum + Number(item.valor || 0), 0);
             const saidas = this.financas.filter((item) => item.tipo === 'saida').reduce((sum, item) => sum + Number(item.valor || 0), 0);
@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const DB = new StorageService();
 
     const exportPlantelCsv = () => {
-        const header = ['Anilha', 'EspÃ©cie', 'MutaÃ§Ã£o', 'Sexo', 'Nascimento', 'Recinto', 'Status'];
+        const header = ['Anilha', 'Espécie', 'Mutação', 'Sexo', 'Nascimento', 'Recinto', 'Status'];
         const rows = DB.aves.map((ave) => [
             ave.anilha,
             ave.especie,
@@ -349,7 +349,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const exportPlantelPdf = () => {
         if (!hasPdfLib) {
-            alert('A biblioteca de PDF nÃ£o carregou. Para usar esta funÃ§Ã£o, abra a aplicaÃ§Ã£o com acesso Ã  internet ou incorpore as bibliotecas localmente.');
+            alert('A biblioteca de PDF não carregou. Para usar esta função, abra a aplicação com acesso à internet ou incorpore as bibliotecas localmente.');
             return;
         }
         const { jsPDF } = window.jspdf;
@@ -357,11 +357,11 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.setFontSize(16);
         doc.text('Plantel - Criador Pro 5.0', 14, 18);
         doc.setFontSize(10);
-        doc.text(`ResponsÃ¡vel: ${DB.config.responsavel || 'NÃ£o informado'}   |   Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, 26);
+        doc.text(`Responsável: ${DB.config.responsavel || 'Não informado'}   |   Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, 26);
         doc.autoTable({
             startY: 32,
-            head: [['Anilha', 'EspÃ©cie', 'MutaÃ§Ã£o', 'Sexo', 'Nascimento', 'Recinto', 'Status']],
-            body: DB.aves.map((ave) => [ave.anilha, ave.especie, ave.mutacao, ave.sexo, ave.nascimento || 'â€”', DB.recintos.find((recinto) => recinto.id === ave.recinto)?.nome || 'â€”', ave.status]),
+            head: [['Anilha', 'Espécie', 'Mutação', 'Sexo', 'Nascimento', 'Recinto', 'Status']],
+            body: DB.aves.map((ave) => [ave.anilha, ave.especie, ave.mutacao, ave.sexo, ave.nascimento || '—', DB.recintos.find((recinto) => recinto.id === ave.recinto)?.nome || '—', ave.status]),
             styles: { fontSize: 9 },
             headStyles: { fillColor: [251, 191, 36], textColor: 0 }
         });
@@ -382,18 +382,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const avesFiltradas = DB.aves.filter((ave) => [ave.anilha, ave.especie, ave.mutacao, ave.sexo].join(' ').toLowerCase().includes(query));
 
         tbody.innerHTML = avesFiltradas.map((ave) => {
-            const recNome = DB.recintos.find((recinto) => recinto.id === ave.recinto)?.nome || 'â€”';
-            const sexoLabel = ave.sexo === 'Macho' ? 'â™‚ï¸' : ave.sexo === 'FÃªmea' ? 'â™€ï¸' : 'â“';
+            const recNome = DB.recintos.find((recinto) => recinto.id === ave.recinto)?.nome || '—';
+            const sexoLabel = ave.sexo === 'Macho' ? 'Macho' : ave.sexo === 'Fêmea' ? 'Fêmea' : 'Indefinido';
             return `
                 <tr>
                     <td><strong>${escapeHtml(ave.anilha)}</strong></td>
                     <td>${escapeHtml(ave.especie)}</td>
                     <td>${escapeHtml(ave.mutacao)}</td>
                     <td>${sexoLabel}</td>
-                    <td>${escapeHtml(ave.nascimento || 'â€”')}</td>
+                    <td>${escapeHtml(ave.nascimento || '—')}</td>
                     <td><span class="badge-recinto">${escapeHtml(recNome)}</span></td>
                     <td><span class="badge positive">${escapeHtml(ave.status)}</span></td>
-                    <td><button class="btn-delete-ave" data-id="${escapeHtml(ave.id)}" style="background:transparent;border:none;cursor:pointer;" title="Remover">âŒ</button></td>
+                    <td><button class="btn-delete-ave" data-id="${escapeHtml(ave.id)}" style="background:transparent;border:none;cursor:pointer;" title="Remover">Remover</button></td>
                 </tr>
             `;
         }).join('');
@@ -411,7 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const recintoSelect = document.getElementById('add-recinto-select');
         if (recintoSelect) {
-            recintoSelect.innerHTML = '<option value="">â€” Sem recinto â€”</option>' + DB.recintos.map((recinto) => `<option value="${escapeHtml(recinto.id)}">${escapeHtml(recinto.nome)}</option>`).join('');
+            recintoSelect.innerHTML = '<option value="">— Sem recinto —</option>' + DB.recintos.map((recinto) => `<option value="${escapeHtml(recinto.id)}">${escapeHtml(recinto.nome)}</option>`).join('');
         }
     };
 
@@ -426,10 +426,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = 'glass p-4';
             card.style.borderTop = `4px solid ${color}`;
-            const qrMarkup = hasQrLib ? `<div style="background:white;padding:10px;border-radius:8px;display:inline-block;margin:0.5rem 0;"><div id="qr-${escapeHtml(recinto.id)}"></div></div>` : '<div class="small text-muted" style="margin:0.8rem 0;">QR Code indisponÃ­vel no modo offline sem a biblioteca carregada.</div>';
+            const qrMarkup = hasQrLib ? `<div style="background:white;padding:10px;border-radius:8px;display:inline-block;margin:0.5rem 0;"><div id="qr-${escapeHtml(recinto.id)}"></div></div>` : '<div class="small text-muted" style="margin:0.8rem 0;">QR Code indisponível no modo offline sem a biblioteca carregada.</div>';
             card.innerHTML = `
                 <h3>${escapeHtml(recinto.nome)}</h3>
-                <p class="text-muted small mb-2">${escapeHtml(recinto.tipo)} â€” <strong style="color:${color}">${avesNoRecinto.length} ave(s)</strong></p>
+                <p class="text-muted small mb-2">${escapeHtml(recinto.tipo)} — <strong style="color:${color}">${avesNoRecinto.length} ave(s)</strong></p>
                 ${qrMarkup}
                 <p class="small">${escapeHtml(recinto.descricao)}</p>
                 <div class="aves-recinto mt-2" style="font-size:0.82rem;color:var(--text-muted);">
@@ -1068,7 +1068,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${maleTruncated ? `<div class="text-muted small mt-2">Mostrando top ${maleRows.length} resultados.</div>` : ''}
                 </div>
                 <div class="mt-3">
-                    <h5>FÃªmeas:</h5>
+                    <h5>Fêmeas:</h5>
                     ${femaleRows.map(f => `<div>${f.label}: <strong>${f.percent}</strong></div>`).join('')}
                     ${femaleTruncated ? `<div class="text-muted small mt-2">Mostrando top ${femaleRows.length} resultados.</div>` : ''}
                 </div>
@@ -1098,7 +1098,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const exportGeneticTxt = () => {
-        const content = "RELATÃ“RIO GENÃ‰TICO - CRIADOR PRO\n\nResultado do Cruzamento:\n" + document.getElementById('results-grid-v2').innerText;
+        const content = "RELATÓRIO GENÉTICO - CRIADOR PRO\n\nResultado do Cruzamento:\n" + document.getElementById('results-grid-v2').innerText;
         const blob = new Blob([content], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -1314,7 +1314,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (pVerdeLivre > 0) filhotes.push({ name: resultadosLoci.blue.Aa ? 'Verde / Azul (Split)' : 'Verde Ancestral', prob: pVerdeLivre, sex: 'M/F' });
         }
         if (pGrey > 0) filhotes.push({ name: 'Cinza', prob: pGrey, sex: 'M/F' });
-        if (pIndigo > 0 && pBlue === 0) filhotes.push({ name: 'Ãndigo', prob: pIndigo, sex: 'M/F' });
+        if (pIndigo > 0 && pBlue === 0) filhotes.push({ name: 'Índigo', prob: pIndigo, sex: 'M/F' });
         if (pViolet > 0) filhotes.push({ name: 'Violeta SF', prob: pViolet, sex: 'M/F' });
         return filhotes.filter((item) => item.prob > 0).sort((a, b) => b.prob - a.prob);
     };
@@ -1339,7 +1339,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const runCruzamento = () => {
         const grid = document.getElementById('results-grid');
         if (!grid) return;
-        grid.innerHTML = '<div class="loading-dna">Analisando mutaÃ§Ãµes...</div>';
+        grid.innerHTML = '<div class="loading-dna">Analisando mutações...</div>';
         const especie = document.getElementById('species-select').value;
         const nomePai = document.getElementById('pai-select').value;
         const nomeMae = document.getElementById('mae-select').value;
@@ -1347,13 +1347,13 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             const results = especie === 'ringneck' ? calcularCruzamentoRingneck(nomePai, nomeMae) : calcularCruzamentoCalopsita(nomePai, nomeMae);
             if (!results.length) {
-                grid.innerHTML = '<div class="loading-dna">Nenhum resultado calculado para esta combinaÃ§Ã£o.</div>';
+                grid.innerHTML = '<div class="loading-dna">Nenhum resultado calculado para esta combinação.</div>';
                 return;
             }
             const totalProb = results.reduce((sum, item) => sum + item.prob, 0);
             grid.innerHTML = `
                 <div class="result-box glass mt-4">
-                    <h4>Estimativa de Filhotes - ${escapeHtml(nomePai)} Ã— ${escapeHtml(nomeMae)}</h4>
+                    <h4>Estimativa de Filhotes - ${escapeHtml(nomePai)} × ${escapeHtml(nomeMae)}</h4>
                     <div class="res-list">
                         ${results.map((result) => {
                             const pct = totalProb > 0 ? Math.round(result.prob / totalProb * 100) : result.prob;
@@ -1371,7 +1371,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             `;
                         }).join('')}
                     </div>
-                    <p style="font-size:0.75rem;color:var(--text-muted);margin-top:1rem;">* Valores aproximados baseados em heranÃ§a mendeliana simples.</p>
+                    <p style="font-size:0.75rem;color:var(--text-muted);margin-top:1rem;">* Valores aproximados baseados em herança mendeliana simples.</p>
                 </div>
             `;
         }, 400);
@@ -1403,47 +1403,47 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (isCinza && cabeca === 'normal') {
             fenotipo = 'Cinza';
             genetica = 'grey grey';
-            notas.push('Gene cinza autossÃ´mico dominante. Pode sobrepor azul.');
+            notas.push('Gene cinza autossômico dominante. Pode sobrepor azul.');
         } else if (isAzul) {
             fenotipo = 'Azul Sky';
             genetica = 'bb / +/+';
-            notas.push('DiluiÃ§Ã£o de faeomelanina por dois alelos recessivos blue.');
+            notas.push('Diluição de faeomelanina por dois alelos recessivos blue.');
         } else if (dorso === 'verde' && cabeca === 'cb') {
             fenotipo = 'Cara Branca';
             genetica = 'cb cb';
-            notas.push('MutaÃ§Ã£o cara branca, autossÃ´mica recessiva.');
+            notas.push('Mutação cara branca, autossômica recessiva.');
         } else if (dorso === 'verde' && cabeca === 'buttercup') {
             fenotipo = 'Buttercup / Lutino parcial';
             genetica = 'Verificar';
-            notas.push('CabeÃ§a amarela intensa pode indicar Lutino ou Buttercup.');
+            notas.push('Cabeça amarela intensa pode indicar Lutino ou Buttercup.');
         } else if (dorso === 'indigo') {
-            fenotipo = 'Ãndigo';
+            fenotipo = 'Índigo';
             genetica = 'ind ind';
-            notas.push('MutaÃ§Ã£o Ã­ndigo: corpo azul-esverdeado profundo, autossÃ´mica recessiva.');
+            notas.push('Mutação índigo: corpo azul-esverdeado profundo, autossômica recessiva.');
         } else if (dorso === 'violeta') {
             fenotipo = 'Violeta SF';
             genetica = 'Vt / +';
-            notas.push('Violeta SF: um alelo violeta. Cor roxa no peito visÃ­vel.');
+            notas.push('Violeta SF: um alelo violeta. Cor roxa no peito visível.');
         } else {
             genetica = 'BB / +/+';
-            notas.push('FenÃ³tipo selvagem. Sem mutaÃ§Ãµes visÃ­veis detectadas.');
+            notas.push('Fenótipo selvagem. Sem mutações visíveis detectadas.');
         }
 
-        if (anel === 'amarelo') notas.push('Colar amarelo visÃ­vel - macho adulto.');
-        if (anel === 'ausente') notas.push('Sem colar - fÃªmea ou jovem.');
+        if (anel === 'amarelo') notas.push('Colar amarelo visível - macho adulto.');
+        if (anel === 'ausente') notas.push('Sem colar - fêmea ou jovem.');
 
         panel.innerHTML = `
             <div class="diagnosis-header glass mb-3">LAUDO PERICIAL</div>
             <div class="res-row glass">
                 <div class="bird-thumb" style="background-image:url('${galleryUrl}')"></div>
                 <div class="res-data">
-                    <div class="diag-title">FENÃ“TIPO IDENTIFICADO</div>
+                    <div class="diag-title">FENÓTIPO IDENTIFICADO</div>
                     <div class="diag-value" style="font-size:1.4rem;font-weight:800;color:var(--primary)">${escapeHtml(fenotipo)}</div>
-                    <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">GenÃ³tipo provÃ¡vel: <code>${escapeHtml(genetica)}</code></div>
+                    <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Genótipo provável: <code>${escapeHtml(genetica)}</code></div>
                 </div>
             </div>
             <div class="mt-3 p-3 glass" style="background:rgba(0,0,0,0.2);">
-                <strong>Notas TÃ©cnicas:</strong><br>
+                <strong>Notas Técnicas:</strong><br>
                 <ul style="margin-top:0.5rem;padding-left:1.2rem;">
                     ${notas.map((nota) => `<li style="margin-bottom:0.4rem;">${escapeHtml(nota)}</li>`).join('')}
                 </ul>
@@ -1462,18 +1462,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tbody) return;
         tbody.innerHTML = [...DB.financas].reverse().map((financa) => `
             <tr>
-                <td>${escapeHtml(financa.data || 'â€”')}</td>
-                <td><span style="color:${financa.tipo === 'entrada' ? '#2ecc71' : '#e74c3c'}">${financa.tipo === 'entrada' ? 'â–² Entrada' : 'â–¼ SaÃ­da'}</span></td>
+                <td>${escapeHtml(financa.data || '—')}</td>
+                <td><span style="color:${financa.tipo === 'entrada' ? '#2ecc71' : '#e74c3c'}">${financa.tipo === 'entrada' ? 'Entrada' : 'Saída'}</span></td>
                 <td>${escapeHtml(financa.descricao)}</td>
                 <td style="font-weight:700;color:${financa.tipo === 'entrada' ? '#2ecc71' : '#e74c3c'}">${formatCurrency(financa.valor)}</td>
-                <td><button class="btn-delete-fin" data-id="${escapeHtml(financa.id)}" style="background:transparent;border:none;cursor:pointer;">âŒ</button></td>
+                <td><button class="btn-delete-fin" data-id="${escapeHtml(financa.id)}" style="background:transparent;border:none;cursor:pointer;">Remover</button></td>
             </tr>
         `).join('');
 
         tbody.querySelectorAll('.btn-delete-fin').forEach((button) => {
             button.addEventListener('click', async (event) => {
                 const id = event.currentTarget.getAttribute('data-id');
-                if (!id || !confirm('Remover este lanÃ§amento?')) return;
+                if (!id || !confirm('Remover este lançamento?')) return;
                 await DB.removeFinanca(id);
                 renderFinanceiro();
                 renderDashboard();
@@ -1539,16 +1539,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const books = [
-        { id: 1, title: 'GenÃ©tica em PsitacÃ­deos', color: '#2ecc71', content: 'Mendel e a cor das penas. DiferenÃ§as entre heranÃ§a autossÃ´mica e ligada ao sexo.' },
-        { id: 2, title: 'Manual Ringneck Pro', color: '#3498db', content: 'PadrÃµes de exposiÃ§Ã£o, identificaÃ§Ã£o e manejo da mutaÃ§Ã£o Cleartail.' },
-        { id: 3, title: 'Medicina AviÃ¡ria', color: '#e67e22', content: 'Protocolos de primeiros socorros e sinais clÃ­nicos iniciais em aves ornamentais.' },
-        { id: 4, title: 'NutriÃ§Ã£o de Aves', color: '#e74c3c', content: 'EstratÃ©gias de nutriÃ§Ã£o para manutenÃ§Ã£o, reproduÃ§Ã£o e crescimento saudÃ¡vel.' },
-        { id: 5, title: 'Biologia Reprodutiva', color: '#9b59b6', content: 'Fases da postura, incubaÃ§Ã£o artificial e manejo de filhotes.' }
+        { id: 1, title: 'Genética em Psitacídeos', color: '#2ecc71', content: 'Mendel e a cor das penas. Diferenças entre herança autossômica e ligada ao sexo.' },
+        { id: 2, title: 'Manual Ringneck Pro', color: '#3498db', content: 'Padrões de exposição, identificação e manejo da mutação Cleartail.' },
+        { id: 3, title: 'Medicina Aviária', color: '#e67e22', content: 'Protocolos de primeiros socorros e sinais clínicos iniciais em aves ornamentais.' },
+        { id: 4, title: 'Nutrição de Aves', color: '#e74c3c', content: 'Estratégias de nutrição para manutenção, reprodução e crescimento saudável.' },
+        { id: 5, title: 'Biologia Reprodutiva', color: '#9b59b6', content: 'Fases da postura, incubação artificial e manejo de filhotes.' }
     ];
 
     const openBook = (book) => {
         document.getElementById('book-title').innerText = book.title;
-        document.getElementById('page-content-title').innerText = `CapÃ­tulo Especial: ${book.title}`;
+        document.getElementById('page-content-title').innerText = `Capítulo Especial: ${book.title}`;
         document.getElementById('page-content-text').innerText = book.content;
         document.getElementById('modal-book-reader').style.display = 'flex';
     };
@@ -1605,7 +1605,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (email === 'admin@admin.com' && password === '123456') {
                 await finishLogin({ user: { email: 'admin@admin.com' } });
             } else {
-                loginError.innerText = 'Credenciais invÃ¡lidas no modo local. Use admin@admin.com / 123456 ou configure o Supabase em config.js.';
+                loginError.innerText = 'Credenciais inválidas no modo local. Use admin@admin.com / 123456 ou configure o Supabase em config.js.';
                 loginError.style.display = 'block';
             }
             return;
@@ -1618,7 +1618,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         if (isSignupMode && !response.data.session) {
-            loginError.innerText = 'Conta criada. Verifique seu e-mail para confirmar o acesso, se sua configuraÃ§Ã£o do Supabase exigir confirmaÃ§Ã£o.';
+            loginError.innerText = 'Conta criada. Verifique seu e-mail para confirmar o acesso, se sua configuração do Supabase exigir confirmação.';
             loginError.style.display = 'block';
             return;
         }
@@ -1635,7 +1635,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-save-ave').addEventListener('click', async () => {
         const anilha = document.getElementById('add-anilha').value.trim();
         const mutacao = document.getElementById('add-mutacao').value.trim();
-        if (!anilha || !mutacao) return alert('Preencha anilha e mutaÃ§Ã£o.');
+        if (!anilha || !mutacao) return alert('Preencha anilha e mutação.');
         await DB.addAve({ anilha, mutacao, especie: document.getElementById('add-especie').value, sexo: document.getElementById('add-sexo').value, nascimento: document.getElementById('add-nascimento').value, recinto: document.getElementById('add-recinto-select').value || '', status: 'Ativo' });
         document.getElementById('add-anilha').value = '';
         document.getElementById('add-mutacao').value = '';
@@ -1667,9 +1667,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('species-select').addEventListener('change', updateSpecies);
     // document.getElementById('btn-cruzamento').addEventListener('click', runCruzamento); // Desativado na v2
     document.getElementById('btn-identificar').addEventListener('click', runIdentification);
-    document.getElementById('btn-send-vet').addEventListener('click', () => handleChat('vet-input', 'vet-chat-history', 'VetPro AI', 'Analisando sintomas com base no protocolo clÃ­nico. Recomendo avaliaÃ§Ã£o das fezes, isolamento preventivo e consulta presencial se persistir por mais de 48h.'));
+    document.getElementById('btn-send-vet').addEventListener('click', () => handleChat('vet-input', 'vet-chat-history', 'VetPro AI', 'Analisando sintomas com base no protocolo clínico. Recomendo avaliação das fezes, isolamento preventivo e consulta presencial se persistir por mais de 48h.'));
     document.getElementById('vet-input').addEventListener('keypress', (event) => {
-        if (event.key === 'Enter') handleChat('vet-input', 'vet-chat-history', 'VetPro AI', 'Analisando sintomas com base no protocolo clÃ­nico. Recomendo avaliaÃ§Ã£o das fezes, isolamento preventivo e consulta presencial se persistir por mais de 48h.');
+        if (event.key === 'Enter') handleChat('vet-input', 'vet-chat-history', 'VetPro AI', 'Analisando sintomas com base no protocolo clínico. Recomendo avaliação das fezes, isolamento preventivo e consulta presencial se persistir por mais de 48h.');
     });
 
     document.getElementById('btn-gen-marketing').addEventListener('click', () => {
@@ -1677,12 +1677,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const mutacao = document.getElementById('mkt-mutacao').value.trim() || especie;
         document.getElementById('mkt-result').innerHTML = `
             <div class="glass p-3">
-                <strong>AnÃºncio Gerado:</strong><br><br>
-                <em>DisponÃ­vel: ${escapeHtml(mutacao)} - ProcedÃªncia garantida.</em><br><br>
-                Ave de criaÃ§Ã£o responsÃ¡vel, criada com manejo tÃ©cnico e alimentaÃ§Ã£o especializada.<br>
-                Plantel de alta genÃ©tica. <strong>Entrego com anilha, nota e histÃ³rico sanitÃ¡rio.</strong><br><br>
+                <strong>Anúncio Gerado:</strong><br><br>
+                <em>Disponível: ${escapeHtml(mutacao)} - Procedência garantida.</em><br><br>
+                Ave de criação responsável, criada com manejo técnico e alimentação especializada.<br>
+                Plantel de alta genética. <strong>Entrego com anilha, nota e histórico sanitário.</strong><br><br>
                 Entre em contato para reservar. Vagas limitadas.<br>
-                <small style="color:var(--text-muted)">#CriadorPro #Ringneck #PsitacÃ­deos #${escapeHtml(mutacao.replace(/\s/g, ''))}</small>
+                <small style="color:var(--text-muted)">#CriadorPro #Ringneck #Psitacídeos #${escapeHtml(mutacao.replace(/\s/g, ''))}</small>
             </div>
         `;
     });
@@ -1694,7 +1694,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const valor = parseFloat(document.getElementById('fin-valor').value);
         const tipo = document.getElementById('fin-tipo').value;
         const data = document.getElementById('fin-data').value;
-        if (!descricao || Number.isNaN(valor) || valor <= 0) return alert('Preencha descriÃ§Ã£o e valor vÃ¡lido.');
+        if (!descricao || Number.isNaN(valor) || valor <= 0) return alert('Preencha descrição e valor válido.');
         await DB.addFinanca({ tipo, descricao, valor, data });
         document.getElementById('fin-desc').value = '';
         document.getElementById('fin-valor').value = '';
@@ -1717,7 +1717,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('tutor-input').addEventListener('keypress', (event) => {
-        if (event.key === 'Enter') handleChat('tutor-input', 'tutor-chat-history', 'Tutor Academia', 'Conceito importante: a heranÃ§a ligada ao sexo em psitacÃ­deos segue o padrÃ£o ZW. FÃªmeas expressam mutaÃ§Ãµes ligadas ao sexo com apenas um alelo.');
+        if (event.key === 'Enter') handleChat('tutor-input', 'tutor-chat-history', 'Tutor Academia', 'Conceito importante: a herança ligada ao sexo em psitacídeos segue o padrão ZW. Fêmeas expressam mutações ligadas ao sexo com apenas um alelo.');
     });
 
     document.getElementById('btn-close-reader').addEventListener('click', () => { document.getElementById('modal-book-reader').style.display = 'none'; });
