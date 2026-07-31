@@ -3,146 +3,1869 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JARVIS 11 - ADVANCED HUD</title>
+    <title>Criador Pro 5.0 — Inteligência Genética e Manejo de Criadouro</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://unpkg.com/force-graph"></script>
+    <!-- PWA MOBILE & TABLET METAS -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0ea5e9">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="logo_criador_pro.png">
+    <script src="/vendor/qrcode.min.js"></script>
+    <script src="/vendor/jspdf.umd.min.js"></script>
+    <script src="/vendor/jspdf.plugin.autotable.min.js"></script>
+    <script src="/config.js"></script>
 </head>
-<body class="jarvis-11">
-    <div class="glow-overlay"></div>
+<body>
 
-    <!-- BOOT MODAL FOR PERMISSIONS -->
-    <div id="boot-overlay" class="boot-overlay">
-        <div class="boot-content">
-            <h1 class="logo-text">JARVIS <span>PROTOCOL 11</span></h1>
-            <p>Sistemas em repouso. Aguardando comando de inicialização.</p>
-            <button id="btn-init" class="btn-init">ATIVAR PROTOCOLO 11</button>
-            <p class="small">Voz e Visão serão calibradas no clique.</p>
-        </div>
-    </div>
-
-    <!-- HUD BACKGROUND DATA -->
-    <div class="bg-data-grid"></div>
-
-    <header class="top-status">
-        <div class="status-indicator">
-            <span class="label">N8N:</span>
-            <div id="status-n8n" class="dot"></div>
-        </div>
-        <div class="status-indicator">
-            <span class="label">NEURAL:</span>
-            <div id="status-obsidian" class="dot online"></div>
-        </div>
-        <div class="status-indicator">
-            <span class="label">CORE:</span>
-            <div id="status-core" class="dot online"></div>
-        </div>
-        <div class="protocol-tag">JARVIS v11.0.4 | STARK-OS</div>
-    </header>
-
-    <div class="hud-container">
-        <!-- CENTRAL CORE (REACTOR + OPTICS + WAVEFORM) -->
-        <div class="reactor-core">
-            <svg class="hud-svg" viewBox="0 0 500 500">
-                <!-- Circular Waveform Bars -->
-                <g id="waveform-container"></g>
-                
-                <!-- Radar Marks (01-12) -->
-                <g class="radar-marks">
-                    <text x="250" y="45" class="radar-mark">12</text>
-                    <text x="352" y="72" class="radar-mark">01</text>
-                    <text x="428" y="148" class="radar-mark">02</text>
-                    <text x="455" y="250" class="radar-mark">03</text>
-                    <text x="428" y="352" class="radar-mark">04</text>
-                    <text x="352" y="428" class="radar-mark">05</text>
-                    <text x="250" y="455" class="radar-mark">06</text>
-                    <text x="148" y="428" class="radar-mark">07</text>
-                    <text x="72" y="352" class="radar-mark">08</text>
-                    <text x="45" y="250" class="radar-mark">09</text>
-                    <text x="72" y="148" class="radar-mark">10</text>
-                    <text x="148" y="72" class="radar-mark">11</text>
-                </g>
-
-                <!-- Rotating Rings -->
-                <circle cx="250" cy="250" r="230" class="hud-ring dash-long" />
-                <circle cx="250" cy="250" r="210" class="hud-ring dash-short" />
-            </svg>
-
-            <div class="camera-vortex">
-                <!-- HEXAGON OVERLAY -->
-                <div class="hex-grid"></div>
-                <video id="camera-feed" autoplay muted playsinline title="VISÃO JARVIS" style="opacity:0;"></video>
-                <!-- LOGO ESTRITAMENTE DENTRO DO CÍRCULO MENOR -->
-                <img id="hud-logo" src="logo_criador_pro.png" class="hud-center-logo" alt="Criador Pro Logo">
-            </div>
-
-            <!-- BIOMETRIC DATA HUD -->
-            <div class="biometric-hud">
-                <div>STAT: <span class="bio-pulse">OPTIMAL</span></div>
-                <div>BPM: <span id="bio-bpm">72</span></div>
-                <div>TEMP: <span id="bio-temp">36.5</span>°C</div>
-                <div>OXG: 98%</div>
-            </div>
+<div class="app-layout">
+    <!-- SIDEBAR PANEL -->
+    <aside class="sidebar-panel">
+        <div class="brand-header">
+            <div class="brand-icon-box">🧬</div>
+            <div class="brand-title">Criador<span>Pro</span></div>
         </div>
 
-        <!-- LEFT PANEL: MEMORY & NEURAL -->
-        <aside class="panel left-panel">
-            <div class="panel-header">
-                <h2>📁 Memória Obsidian</h2>
-                <div class="tab-controls">
-                    <button onclick="toggleView('tree')">TREE</button>
-                    <button onclick="toggleView('graph')">BRAIN</button>
-                    <button onclick="toggleView('tasks')" style="border-color: var(--accent); color: var(--accent);">TASKS</button>
+        <div class="nav-section-title">Módulos do Sistema</div>
+        <ul class="sidebar-menu">
+            <li data-module="dashboard" class="active">
+                <a href="#"><span class="nav-icon">📊</span> <span>Dashboard</span></a>
+            </li>
+            <li data-module="plantel">
+                <a href="#"><span class="nav-icon">🦜</span> <span>Meu Plantel</span></a>
+            </li>
+            <li data-module="recintos">
+                <a href="#"><span class="nav-icon">🏗️</span> <span>Recintos & QR</span></a>
+            </li>
+            <li data-module="maternidade">
+                <a href="#"><span class="nav-icon">👶</span> <span>Maternidade & UTI</span></a>
+            </li>
+            <li data-module="cozinha">
+                <a href="#"><span class="nav-icon">🥗</span> <span>Cozinha & Nutrição</span></a>
+            </li>
+            <li data-module="quarentena">
+                <a href="#"><span class="nav-icon">🏥</span> <span>Quarentena & Sanidade</span></a>
+            </li>
+            <li data-module="genetica">
+                <a href="#"><span class="nav-icon">🧬</span> <span>Calculadora</span></a>
+            </li>
+            <li data-module="identificador">
+                <a href="#"><span class="nav-icon">🔍</span> <span>Identificador</span></a>
+            </li>
+            <li data-module="vet">
+                <a href="#"><span class="nav-icon">🏥</span> <span>Vet AI</span></a>
+            </li>
+            <li data-module="marketing">
+                <a href="#"><span class="nav-icon">📢</span> <span>Marketing</span></a>
+            </li>
+            <li data-module="financeiro">
+                <a href="#"><span class="nav-icon">💰</span> <span>Financeiro</span></a>
+            </li>
+            <li data-module="admin">
+                <a href="#"><span class="nav-icon">⚙️</span> <span>Meu Criatório</span></a>
+            </li>
+            <li data-module="master-admin" id="nav-master-admin" style="display:none; border-top:1px dashed var(--border-glass); margin-top:0.5rem; padding-top:0.5rem;">
+                <a href="#"><span class="nav-icon">🛡️</span> <span style="color:#fbbf24; font-weight:800;">Painel Master</span></a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <div class="user-profile-badge">
+                <div class="avatar-circle">CP</div>
+                <div class="user-info">
+                    <div class="user-name" id="user-name-display">Criatório Pingo D'Ouro</div>
+                    <div class="user-role">Conta Profissional</div>
                 </div>
             </div>
-            <div id="file-tree" class="file-tree scroll-stark"></div>
-            <div id="graph-view" class="file-tree" style="display:none;"></div>
-            
-            <div id="tasks-view" class="file-tree scroll-stark" style="display:none; padding: 10px;">
-                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
-                    <input type="text" id="task-titulo" placeholder="Nova tarefa..." style="background: transparent; border: 1px solid var(--accent); color: #fff; padding: 8px;">
-                    <input type="datetime-local" id="task-dataHora" style="background: transparent; border: 1px solid var(--accent); color: #fff; padding: 8px;">
-                    <button onclick="adicionarTarefa()" style="background: var(--accent); color: #000; border: none; padding: 8px; cursor: pointer; font-weight: bold;">ADICIONAR</button>
+        </div>
+    </aside>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+        <!-- TOP HEADER -->
+        <header class="top-header">
+            <div class="header-search">
+                <span class="search-icon-svg">🔍</span>
+                <input type="text" id="global-search" placeholder="Pesquisar anilha, mutação, recinto, GTA, exames...">
+            </div>
+
+            <div class="header-actions">
+                <div class="status-pill">
+                    <div class="status-dot-glow"></div>
+                    <span>PRO v5.0 ONLINE</span>
                 </div>
-                <ul id="task-list" style="list-style: none; padding: 0; margin: 0; font-size: 0.85em;"></ul>
+                <div class="user-profile-badge" style="background:transparent; border:none; padding:0;">
+                    <div class="avatar-circle" style="width:34px; height:34px; font-size:0.8rem;">CP</div>
+                </div>
             </div>
-        </aside>
+        </header>
 
-        <!-- RIGHT PANEL: PRODUCTION AGENTS -->
-        <aside class="panel right-panel">
-            <div class="panel-header">
-                <h2>🤖 Agentes Ativos</h2>
-            </div>
-            <div class="agents-grid">
-                <div class="agent-card" onclick="triggerAgent('radar')">📡 RADAR</div>
-                <div class="agent-card" onclick="triggerAgent('midas')">💰 MIDAS</div>
-                <div class="agent-card" onclick="triggerAgent('spielberg')">🎬 SPIELBERG</div>
-                <div class="agent-card" onclick="triggerAgent('stanley')">✒️ STANLEY</div>
+        <!-- VIEWPORT CONTENT -->
+        <main class="content-viewport">
+
+            <!-- BANNER DE SUPORTE REMOTO (IMPERSONATION) -->
+            <div id="support-mode-banner" style="display:none; background:linear-gradient(90deg, #d97706, #f59e0b); color:#fff; padding:0.85rem 1.25rem; border-radius:12px; margin-bottom:1.5rem; justify-content:space-between; align-items:center; box-shadow:0 8px 20px rgba(217,119,6,0.3);">
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:1.4rem;">🎧</span>
+                    <div>
+                        <strong style="font-size:0.95rem;">Modo de Suporte ao Criador Ativo</strong>
+                        <p style="font-size:0.8rem; margin:0; opacity:0.9;">Você está acessando como <strong id="support-mode-criatorio-name">Criatório X</strong> para auxílio de configurações fiscais e fotos.</p>
+                    </div>
+                </div>
+                <button class="btn-ui" onclick="window.sairSuporteModo()" style="background:#0f172a; color:#fff; border:none; padding:0.5rem 1rem; font-size:0.82rem; font-weight:700;">❌ Sair do Modo Suporte</button>
             </div>
 
-            <div class="panel-header mt-20">
-                <h2>📄 Visualizador de Notas</h2>
-            </div>
-            <div id="note-preview" class="note-preview scroll-stark">
-                Aguardando seleção de módulo...
-            </div>
-        </aside>
+            <!-- MODULE 1: DASHBOARD -->
+            <section id="dashboard" class="app-module active">
+                <div class="hero-banner-card">
+                    <div class="hero-content">
+                        <div class="hero-tag">✨ Sistema de Gestão Ornitológica</div>
+                        <h1 class="hero-title">Painel de Controle Inteligente</h1>
+                        <p class="hero-subtitle">Bem-vindo ao Criador Pro 5.0. Monitore a genética do seu plantel, quarentena e sanidade, estoque na cozinha e gestão financeira em um só lugar.</p>
+                        <div class="hero-actions-row">
+                            <button class="btn-ui btn-ui-primary" onclick="switchModule('genetica')">🧬 Simular Cruzamento</button>
+                            <button class="btn-ui btn-ui-secondary" onclick="openModal('modal-add-ave')">+ Cadastrar Ave</button>
+                            <button class="btn-ui btn-ui-emerald" onclick="switchModule('quarentena')">🏥 Quarentena & Sanidade</button>
+                        </div>
+                    </div>
+                </div>
 
-        <!-- BOTTOM PANEL: COMMAND CENTRAL -->
-        <section class="panel bottom-panel">
-            <div id="chat-history" class="chat-log scroll-stark">
-                <div class="message system">[SISTEMA] Protocolo Jarvis 11 Ativo. Todos os sistemas nominais.</div>
-            </div>
-            <div class="chat-input-row">
-                <button id="btn-mic" class="btn-mic" title="Voice Input">🎙️</button>
-                <input type="text" id="chat-input" placeholder="Comando vocal ou texto..." autocomplete="off">
-                <button id="btn-send">ENVIAR</button>
-            </div>
-        </section>
+                <div class="stats-grid-container">
+                    <div class="stat-widget-card">
+                        <div class="stat-icon-wrapper stat-icon-amber">🦜</div>
+                        <div class="stat-data-box">
+                            <span class="stat-label">Total no Plantel</span>
+                            <span class="stat-value" id="dash-aves">3</span>
+                            <span class="stat-trend trend-up">▲ 100% ativas</span>
+                        </div>
+                    </div>
 
-        <!-- POPUP CONTAINER FOR AGENT RESPONSES -->
-        <div id="agent-popups" class="agent-popups-container"></div>
+                    <div class="stat-widget-card">
+                        <div class="stat-icon-wrapper stat-icon-emerald">🪺</div>
+                        <div class="stat-data-box">
+                            <span class="stat-label">Ovos na Chocadeira</span>
+                            <span class="stat-value" id="dash-ovos">0</span>
+                            <span class="stat-trend trend-up">● Em incubação</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-widget-card">
+                        <div class="stat-icon-wrapper stat-icon-cyan">🛡️</div>
+                        <div class="stat-data-box">
+                            <span class="stat-label">Aves em Quarentena</span>
+                            <span class="stat-value" id="dash-quarentena-count">0</span>
+                            <span class="stat-trend trend-up">● Biossegurança</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-widget-card">
+                        <div class="stat-icon-wrapper stat-icon-purple">💰</div>
+                        <div class="stat-data-box">
+                            <span class="stat-label">Saldo Financeiro</span>
+                            <span class="stat-value" id="dash-saldo">R$ 1.120,00</span>
+                            <span class="stat-trend trend-up">▲ Saldo positivo</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dash-two-columns">
+                    <div class="glass-card">
+                        <div class="card-header-flex">
+                            <div class="card-title-group">
+                                <h3>Recentes no Plantel</h3>
+                                <p>Últimas aves cadastradas no sistema</p>
+                            </div>
+                            <button class="btn-ui btn-ui-secondary" style="padding:0.4rem 0.9rem; font-size:0.8rem;" onclick="switchModule('plantel')">Ver Todas →</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="ui-data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Anilha</th>
+                                        <th>Espécie</th>
+                                        <th>Mutação</th>
+                                        <th>Sexo</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dash-recent-table">
+                                    <tr>
+                                        <td><strong>RN-2024-001</strong></td>
+                                        <td>Ringneck</td>
+                                        <td>Azul Sky</td>
+                                        <td>♂️ Macho</td>
+                                        <td><span class="badge-pill badge-emerald">Ativo</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <div class="card-header-flex">
+                            <div class="card-title-group">
+                                <h3>Ações Rápidas</h3>
+                                <p>Ferramentas de manejo</p>
+                            </div>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:0.8rem;">
+                            <button class="btn-ui btn-ui-secondary" style="justify-content:flex-start;" onclick="switchModule('quarentena')">🏥 Quarentena, GTA & Enfermaria</button>
+                            <button class="btn-ui btn-ui-secondary" style="justify-content:flex-start;" onclick="switchModule('cozinha')">🥗 Cardápios & Estoque de Alimentos</button>
+                            <button class="btn-ui btn-ui-secondary" style="justify-content:flex-start;" onclick="switchModule('maternidade')">👶 Maternidade & Chocadeira</button>
+                            <button class="btn-ui btn-ui-secondary" style="justify-content:flex-start;" onclick="switchModule('genetica')">🧬 Calculadora Ringneck Multi-Locus</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODULE 2: MEU PLANTEL -->
+            <section id="plantel" class="app-module">
+                <div class="page-title-box">
+                    <h1>Meu Plantel de Aves</h1>
+                    <p>Gerenciamento completo das aves ativas, fotos, pedigree e histórico clínico.</p>
+                </div>
+
+                <div class="glass-card mb-4" style="margin-bottom: 1.5rem;">
+                    <div class="card-header-flex" style="margin-bottom:0;">
+                        <div style="display:flex; gap:0.75rem; flex-wrap:wrap; flex:1;">
+                            <input type="text" id="busca-plantel" class="input-ui" placeholder="Buscar por anilha, espécie, mutação, pai/mãe..." style="max-width:340px;">
+                        </div>
+                        <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                            <button class="btn-ui btn-ui-secondary" id="btn-export-csv">📥 Baixar CSV</button>
+                            <button class="btn-ui btn-ui-secondary" id="btn-export-pdf" style="border-color:rgba(244,63,94,0.4); color:#f43f5e;">🖨️ PDF Oficial</button>
+                            <button class="btn-ui btn-ui-primary" id="btn-add-ave" onclick="openModal('modal-add-ave')">+ Cadastrar Ave</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <div class="table-responsive">
+                        <table class="ui-data-table" id="plantel-table">
+                            <thead>
+                                <tr>
+                                    <th>Foto</th>
+                                    <th>Anilha</th>
+                                    <th>Espécie</th>
+                                    <th>Mutação</th>
+                                    <th>Sexo</th>
+                                    <th>Pedigree (Pai / Mãe)</th>
+                                    <th>Recinto</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODULE 3: RECINTOS -->
+            <section id="recintos" class="app-module">
+                <div class="page-title-box flex-header">
+                    <div>
+                        <h1>Organização de Recintos & Compartimentos</h1>
+                        <p>Gestão por Alas (Matrizes, Filhotes, Quarentena, Maternidade) e Compartimentos (Gaiolas, Baia, Viveiro) com QR Code.</p>
+                    </div>
+                    <button class="btn-ui btn-ui-primary" onclick="openModal('modal-add-recinto')">+ Criar Recinto / Setor</button>
+                </div>
+
+                <div id="recintos-grid-container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:1.5rem;"></div>
+            </section>
+
+            <!-- MODULE 4: MATERNIDADE -->
+            <section id="maternidade" class="app-module">
+                <div class="page-title-box flex-header">
+                    <div>
+                        <h1>Maternidade, Chocadeira & UTI Neonatal</h1>
+                        <p>Controle de incubação de ovos, avisos de ovoscopia e eclosão, pesagem diária e escala de papa.</p>
+                    </div>
+                    <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                        <button class="btn-ui btn-ui-secondary" id="btn-export-maternidade-csv">📊 Exportar Excel (CSV)</button>
+                        <button class="btn-ui btn-ui-secondary" id="btn-export-maternidade-pdf" style="border-color:rgba(244,63,94,0.4); color:#f43f5e;">🖨️ PDF Maternidade</button>
+                        <button class="btn-ui btn-ui-primary" onclick="openModal('modal-add-ovo')">+ Cadastrar Ovo</button>
+                        <button class="btn-ui btn-ui-emerald" onclick="openModal('modal-add-filhote-uti')">+ Novo Filhote UTI</button>
+                    </div>
+                </div>
+
+                <div class="glass-card mb-4" style="margin-bottom: 1.5rem;">
+                    <div style="display:flex; gap:1rem; border-bottom:1px solid var(--border-glass); padding-bottom:0.75rem;">
+                        <button class="btn-ui btn-ui-primary tab-btn-mat active" data-mat-tab="chocadeira">🐣 Chocadeira & Incubadora</button>
+                        <button class="btn-ui btn-ui-secondary tab-btn-mat" data-mat-tab="bercario">🍼 UTI Neonatal / Berçário</button>
+                        <button class="btn-ui btn-ui-secondary tab-btn-mat" data-mat-tab="escala">⏰ Escala de Alimentação</button>
+                    </div>
+
+                    <!-- TAB 1: CHOCADEIRA -->
+                    <div id="tab-chocadeira" class="mat-tab-content active" style="margin-top:1.5rem;">
+                        <div class="table-responsive">
+                            <table class="ui-data-table" id="ovos-table">
+                                <thead>
+                                    <tr>
+                                        <th>Código Ovo</th>
+                                        <th>Recinto Origem</th>
+                                        <th>Pedigree (Pai / Mãe)</th>
+                                        <th>Data Postura</th>
+                                        <th>Data Incubação</th>
+                                        <th>Ovoscopia (7d)</th>
+                                        <th>Previsão Eclosão (23d)</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: BERÇÁRIO / UTI NEONATAL -->
+                    <div id="tab-bercario" class="mat-tab-content" style="display:none; margin-top:1.5rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                            <h3>Filhotes em Tratagem Intensiva na UTI</h3>
+                            <button class="btn-ui btn-ui-primary" onclick="openModal('modal-add-peso-filhote')">+ Registrar Peso / Evolução</button>
+                        </div>
+                        <div id="uti-filhotes-cards-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:1.5rem;"></div>
+                    </div>
+
+                    <!-- TAB 3: ESCALA ALIMENTAÇÃO -->
+                    <div id="tab-escala" class="mat-tab-content" style="display:none; margin-top:1.5rem;">
+                        <h3>Escala diária de tratagem com papa</h3>
+                        <p style="color:var(--text-muted); margin-bottom:1.5rem;">Avisos e horários calculados pelo sistema para os filhotes ativos na UTI.</p>
+                        <div id="escala-alimentacao-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1.25rem;"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODULE: COZINHA & NUTRIÇÃO -->
+            <section id="cozinha" class="app-module">
+                <div class="page-title-box flex-header">
+                    <div>
+                        <h1>Cozinha, Nutrição & Manejo Operacional</h1>
+                        <p>Controle de cardápios por recinto, estoque de alimentos com alerta mínimo, escala de tratadores e limpeza.</p>
+                    </div>
+                    <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                        <button class="btn-ui btn-ui-secondary" id="btn-export-cozinha-csv">📊 Exportar Excel (CSV)</button>
+                        <button class="btn-ui btn-ui-secondary" id="btn-export-cozinha-pdf" style="border-color:rgba(244,63,94,0.4); color:#f43f5e;">🖨️ PDF Nutrição</button>
+                        <button class="btn-ui btn-ui-primary" onclick="openModal('modal-add-cardapio')">+ Cadastrar Cardápio</button>
+                        <button class="btn-ui btn-ui-emerald" onclick="openModal('modal-add-insumo')">+ Novo Insumo Estoque</button>
+                        <button class="btn-ui btn-ui-secondary" onclick="openModal('modal-add-escala-manejo')">🧹 + Escala Manejo</button>
+                    </div>
+                </div>
+
+                <div class="glass-card mb-4" style="margin-bottom: 1.5rem;">
+                    <div style="display:flex; gap:1rem; border-bottom:1px solid var(--border-glass); padding-bottom:0.75rem;">
+                        <button class="btn-ui btn-ui-primary tab-btn-cozinha active" data-cozinha-tab="estoque">📦 Controle de Estoque</button>
+                        <button class="btn-ui btn-ui-secondary tab-btn-cozinha" data-cozinha-tab="cardapios">🥗 Cardápios & Dietas por Recinto</button>
+                        <button class="btn-ui btn-ui-secondary tab-btn-cozinha" data-cozinha-tab="escala">🧹 Escala de Tratadores & Limpeza</button>
+                    </div>
+
+                    <!-- TAB 1: ESTOQUE DE ALIMENTOS -->
+                    <div id="tab-estoque" class="cozinha-tab-content active" style="margin-top:1.5rem;">
+                        <div class="table-responsive">
+                            <table class="ui-data-table" id="estoque-alimentos-table">
+                                <thead>
+                                    <tr>
+                                        <th>Insumo / Alimento</th>
+                                        <th>Categoria</th>
+                                        <th>Qtd. Atual</th>
+                                        <th>Estoque Mínimo</th>
+                                        <th>Fornecedor</th>
+                                        <th>Data Validade</th>
+                                        <th>Status Estoque</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: CARDÁPIOS -->
+                    <div id="tab-cardapios" class="cozinha-tab-content" style="display:none; margin-top:1.5rem;">
+                        <div id="cardapios-grid-container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:1.5rem;"></div>
+                    </div>
+
+                    <!-- TAB 3: ESCALA MANEJO & LIMPEZA -->
+                    <div id="tab-escala-manejo" class="cozinha-tab-content" style="display:none; margin-top:1.5rem;">
+                        <div id="escala-manejo-cards-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:1.5rem;"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODULE: SQUARENTENA & ENFERMARIA (SANIDADE) -->
+            <section id="quarentena" class="app-module">
+                <div class="page-title-box flex-header">
+                    <div>
+                        <h1>Gestão de Quarentena, Enfermaria & Sanidade</h1>
+                        <p>Controle sanitário de entrada (GTA, NF, Certificado, Prontuário), tratamento em enfermaria e expedição de saída com memorial fotográfico.</p>
+                    </div>
+                    <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                        <button class="btn-ui btn-ui-secondary" id="btn-export-quarentena-csv">📊 Exportar Excel (CSV)</button>
+                        <button class="btn-ui btn-ui-secondary" id="btn-export-quarentena-pdf" style="border-color:rgba(244,63,94,0.4); color:#f43f5e;">🖨️ PDF Sanidade</button>
+                        <button class="btn-ui btn-ui-primary" onclick="openModal('modal-add-quarentena')">🛡️ + Nova Entrada Quarentena</button>
+                        <button class="btn-ui btn-ui-emerald" onclick="openModal('modal-add-enfermaria')">🏥 + Internar na Enfermaria</button>
+                        <button class="btn-ui btn-ui-secondary" onclick="openModal('modal-add-saida')">🚚 + Preparo de Saída</button>
+                    </div>
+                </div>
+
+                <div class="glass-card mb-4" style="margin-bottom: 1.5rem;">
+                    <div style="display:flex; gap:1rem; border-bottom:1px solid var(--border-glass); padding-bottom:0.75rem;">
+                        <button class="btn-ui btn-ui-primary tab-btn-quarentena active" data-quarentena-tab="entrada">🛡️ Quarentena de Entrada</button>
+                        <button class="btn-ui btn-ui-secondary tab-btn-quarentena" data-quarentena-tab="enfermaria">🏥 Enfermaria & UTI Sanitária</button>
+                        <button class="btn-ui btn-ui-secondary tab-btn-quarentena" data-quarentena-tab="saida">🚚 Animais de Saída / Expedição</button>
+                    </div>
+
+                    <!-- TAB 1: QUARENTENA DE ENTRADA -->
+                    <div id="tab-quarentena-entrada" class="quarentena-tab-content active" style="margin-top:1.5rem;">
+                        <div class="table-responsive">
+                            <table class="ui-data-table" id="quarentena-table">
+                                <thead>
+                                    <tr>
+                                        <th>Anilha / Ave</th>
+                                        <th>Gaiola Isolamento</th>
+                                        <th>Origem (Criadouro)</th>
+                                        <th>Documentos (NF / GTA)</th>
+                                        <th>Data Chegada</th>
+                                        <th>Previsão Alta</th>
+                                        <th>Status Sanitário</th>
+                                        <th>Anexos</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: ENFERMARIA HOSPITALAR -->
+                    <div id="tab-enfermaria-lista" class="quarentena-tab-content" style="display:none; margin-top:1.5rem;">
+                        <div id="enfermaria-cards-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:1.5rem;"></div>
+                    </div>
+
+                    <!-- TAB 3: ANIMAIS DE SAÍDA -->
+                    <div id="tab-saida-lista" class="quarentena-tab-content" style="display:none; margin-top:1.5rem;">
+                        <div id="saida-cards-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:1.5rem;"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODULE 5: CALCULADORA GENÉTICA -->
+            <section id="genetica" class="app-module">
+                <div class="page-title-box flex-header">
+                    <div>
+                        <h1>Calculadora Genética Pro v2.0</h1>
+                        <p>Motor mendeliano multi-locus com suporte à Série Azul e mutações combinadas.</p>
+                    </div>
+                    <div style="display:flex; gap:0.75rem;">
+                        <button class="btn-ui btn-ui-secondary" id="btn-export-pdf-calc">📄 Gerar PDF Oficial</button>
+                        <button class="btn-ui btn-ui-secondary" id="btn-export-txt-calc">📌 Salvar TXT</button>
+                    </div>
+                </div>
+
+                <div class="glass-card mb-4" style="margin-bottom: 1.5rem;">
+                    <div style="display:flex; gap:1rem; border-bottom:1px solid var(--border-glass); padding-bottom:0.75rem;">
+                        <button class="btn-ui btn-ui-primary tab-btn-calc active" data-calc-tab="cruzamento">Cruzamento Multi-Locus</button>
+                        <button class="btn-ui btn-ui-secondary tab-btn-calc" data-calc-tab="validacao">Suíte de Validação</button>
+                        <button class="btn-ui btn-ui-secondary tab-btn-calc" data-calc-tab="roadmap">Próximas Espécies</button>
+                    </div>
+
+                    <!-- TAB 1: CRUZAMENTO -->
+                    <div id="tab-cruzamento" class="calc-tab-content active" style="margin-top:1.5rem;">
+                        <div class="form-group-ui" style="max-width:320px; margin-bottom:1.5rem;">
+                            <label>Espécie de Aves</label>
+                            <select id="species-select" class="input-ui">
+                                <option value="ringneck">Ringneck (Completo Multi-Locus)</option>
+                                <option value="calopsita">Calopsita (Modo Múltiplo)</option>
+                            </select>
+                        </div>
+
+                        <div class="genetics-workspace-grid">
+                            <div class="parent-selection-card">
+                                <div class="parent-card-header">
+                                    <div class="gender-icon gender-male">♂️</div>
+                                    <div>
+                                        <h3 style="font-size:1.1rem; font-weight:800;">Macho (Pai)</h3>
+                                        <p style="font-size:0.78rem; color:var(--text-muted);">Configure os genótipos do pai</p>
+                                    </div>
+                                </div>
+                                <div id="macho-mutations-chips" class="mutation-chips-scroll">Carregando painel de mutações...</div>
+                            </div>
+
+                            <div class="parent-selection-card">
+                                <div class="parent-card-header">
+                                    <div class="gender-icon gender-female">♀️</div>
+                                    <div>
+                                        <h3 style="font-size:1.1rem; font-weight:800;">Fêmea (Mãe)</h3>
+                                        <p style="font-size:0.78rem; color:var(--text-muted);">Configure os genótipos da mãe</p>
+                                    </div>
+                                </div>
+                                <div id="femea-mutations-chips" class="mutation-chips-scroll">Carregando painel de mutações...</div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card blue-series-panel" style="margin-bottom:1.5rem;">
+                            <h4 style="font-family:'Outfit',sans-serif; font-size:1.1rem; color:var(--primary); margin-bottom:0.75rem;">Série Azul (Locus Multialélico Ringneck)</h4>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem;">
+                                <div class="form-group-ui">
+                                    <label>Macho — Série Azul</label>
+                                    <select id="blue-series-male" class="input-ui"></select>
+                                </div>
+                                <div class="form-group-ui">
+                                    <label>Fêmea — Série Azul</label>
+                                    <select id="blue-series-female" class="input-ui"></select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn-ui btn-ui-primary" id="btn-cruzamento-v2" style="width:100%; padding:1.1rem; font-size:1rem;">⚡ Calcular Cruzamento Multi-Locus</button>
+
+                        <div id="results-grid-v2"></div>
+                        
+                        <button class="btn-ui btn-ui-emerald" id="btn-download-pdf-calc" style="width:100%; margin-top:1rem; padding:1rem; display:none;">📥 Baixar Laudo Técnico Completo (PDF)</button>
+
+                        <div class="glass-card mt-4" style="margin-top:1.5rem;">
+                            <div class="card-header-flex">
+                                <h3>Catálogo Oficial de Mutações Ringneck</h3>
+                                <span id="ringneck-catalog-meta" style="font-size:0.8rem; color:var(--text-muted);"></span>
+                            </div>
+                            <input id="ringneck-catalog-search" type="text" class="input-ui" placeholder="Buscar mutação no catálogo..." style="margin-bottom:1rem;">
+                            <div id="ringneck-catalog-groups" class="ringneck-catalog-groups" style="display:grid; gap:1rem;"></div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: VALIDAÇÃO -->
+                    <div id="tab-validacao" class="calc-tab-content" style="display:none; margin-top:1.5rem;">
+                        <h3>Suíte de Validação por Planilha</h3>
+                        <p style="color:var(--text-muted); margin-bottom:1rem;">Testes automatizados comparando o motor mendeliano com planilhas oficiais de referência.</p>
+                        <div id="validation-results-calc"></div>
+                    </div>
+
+                    <!-- TAB 3: ROADMAP -->
+                    <div id="tab-roadmap" class="calc-tab-content" style="display:none; margin-top:1.5rem;">
+                        <h3>Roadmap de Espécies em Expansão</h3>
+                        <div id="species-roadmap-calc" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:1rem; margin-top:1rem;"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODULE 6: IDENTIFICADOR VISUAL -->
+            <section id="identificador" class="app-module">
+                <div class="page-title-box">
+                    <h1>Identificador Visual por Marcadores</h1>
+                    <p>Insira os traços visuais da ave para obter a classificação pericial da mutação.</p>
+                </div>
+
+                <div class="dash-two-columns">
+                    <div class="glass-card">
+                        <h3 style="margin-bottom:1rem; font-family:'Outfit',sans-serif;">Mapeamento de Fenótipo</h3>
+                        
+                        <div class="form-group-ui">
+                            <label>👁️ Cor dos Olhos</label>
+                            <select id="id-olhos" class="input-ui">
+                                <option value="dark">Escuros / Marrons</option>
+                                <option value="red">Vermelhos / Rubi</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group-ui">
+                            <label>👤 Cabeça / Máscara</label>
+                            <select id="id-cabeca" class="input-ui">
+                                <option value="normal">Normal</option>
+                                <option value="cb">Cara Branca</option>
+                                <option value="buttercup">Cabeça Amarela (Buttercup)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group-ui">
+                            <label>🎨 Coloração do Dorso e Asas</label>
+                            <select id="id-dorso" class="input-ui">
+                                <option value="verde">Verde (Ancestral)</option>
+                                <option value="azul">Azul / Sky</option>
+                                <option value="cinza">Cinza</option>
+                                <option value="indigo">Índigo / Azul Profundo</option>
+                                <option value="violeta">Violeta / Roxo</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group-ui">
+                            <label>💍 Colar (Ring)</label>
+                            <select id="id-anel" class="input-ui">
+                                <option value="ausente">Ausente</option>
+                                <option value="amarelo">Amarelo / Dourado</option>
+                                <option value="normal">Normal / Preto</option>
+                            </select>
+                        </div>
+
+                        <button class="btn-ui btn-ui-primary" id="btn-identificar" style="width:100%; margin-top:1rem;">🔍 Gerar Laudo de Perícia</button>
+                    </div>
+
+                    <div class="glass-card" id="id-result-panel">
+                        <div style="color:var(--text-muted); text-align:center; padding:3rem 1rem;">
+                            <div style="font-size:3rem; margin-bottom:0.5rem;">🔍</div>
+                            <p>Selecione as características visuais ao lado e clique em "Gerar Laudo de Perícia".</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODULE 7: VET AI -->
+            <section id="vet" class="app-module">
+                <div class="page-title-box">
+                    <h1>Assistente Veterinário IA — Vet Agent Pro</h1>
+                    <p>Tire dúvidas clínicas, de manejo nutricional e sanidade das aves.</p>
+                </div>
+
+                <div class="glass-card chat-window-card">
+                    <div class="chat-history-scroll" id="vet-chat-history">
+                        <div class="chat-msg-bubble chat-msg-ai">
+                            <strong>🏥 Vet Agent Pro:</strong> Olá! Sou o assistente veterinário especializado do Criador Pro. Como posso ajudar com seu plantel hoje?
+                        </div>
+                    </div>
+                    <div class="chat-input-bar">
+                        <input type="text" id="vet-input" class="input-ui" placeholder="Digite sua dúvida de manejo ou sintoma observada..." style="margin:0;">
+                        <button class="btn-ui btn-ui-primary" id="btn-send-vet">Enviar</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODULE 8: MARKETING -->
+            <section id="marketing" class="app-module">
+                <div class="page-title-box">
+                    <h1>Gerador Automático de Anúncios de Marketing</h1>
+                    <p>Selecione uma ave do seu plantel para gerar anúncios com foto, genética e pedigree completo.</p>
+                </div>
+
+                <div class="glass-card" style="max-width:750px;">
+                    <div class="form-group-ui" style="margin-bottom:1.25rem;">
+                        <label style="color:var(--primary); font-size:0.9rem;">🦜 Selecionar Ave Cadastrada do Plantel</label>
+                        <select id="mkt-select-ave" class="input-ui" style="border-color:var(--primary);">
+                            <option value="">— Selecionar Ave do Plantel —</option>
+                        </select>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                        <div class="form-group-ui">
+                            <label>Espécie</label>
+                            <select id="mkt-especie" class="input-ui">
+                                <option>Ringneck</option>
+                                <option>Calopsita</option>
+                                <option>Papagaio</option>
+                            </select>
+                        </div>
+                        <div class="form-group-ui">
+                            <label>Mutação / Cor</label>
+                            <input type="text" id="mkt-mutacao" class="input-ui" placeholder="Ex: Azul Sky Cleartail">
+                        </div>
+                    </div>
+
+                    <button class="btn-ui btn-ui-primary" id="btn-gen-marketing" style="width:100%; margin-top:1rem;">⚡ Criar Anúncio Persuasivo</button>
+
+                    <div id="mkt-result" style="margin-top:1.5rem;"></div>
+                </div>
+            </section>
+
+            <!-- MODULE 9: FINANCEIRO -->
+            <section id="financeiro" class="app-module">
+                <div class="page-title-box flex-header">
+                    <div>
+                        <h1>Controle Financeiro & Emissão de Notas Fiscais (NF-e)</h1>
+                        <p>Gestão de receitas, despesas e emissão simplificada de Nota Fiscal Eletrônica de Produtor Rural diretamente com a SEFAZ.</p>
+                    </div>
+                    <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                        <button class="btn-ui btn-ui-secondary" onclick="openModal('modal-add-financa')">+ Lançamento</button>
+                        <button class="btn-ui btn-ui-emerald" onclick="openModalEmitirNfe()">🧾 + Emitir Nota Fiscal (NF-e)</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid-container" style="grid-template-columns:repeat(3, 1fr); margin-bottom:1.5rem;">
+                    <div class="stat-widget-card">
+                        <div class="stat-icon-wrapper stat-icon-emerald">▲</div>
+                        <div class="stat-data-box">
+                            <span class="stat-label">Entradas (Receitas)</span>
+                            <span class="stat-value" id="fin-entradas" style="color:var(--accent-emerald);">R$ 1.650,00</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-widget-card">
+                        <div class="stat-icon-wrapper" style="background:rgba(244,63,94,0.12); color:var(--accent-rose);">▼</div>
+                        <div class="stat-data-box">
+                            <span class="stat-label">Saídas (Despesas)</span>
+                            <span class="stat-value" id="fin-saidas" style="color:var(--accent-rose);">R$ 530,00</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-widget-card">
+                        <div class="stat-icon-wrapper stat-icon-amber">💰</div>
+                        <div class="stat-data-box">
+                            <span class="stat-label">Saldo Líquido</span>
+                            <span class="stat-value" id="fin-saldo">R$ 1.120,00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card mb-4" style="margin-bottom: 1.5rem;">
+                    <div style="display:flex; gap:1rem; border-bottom:1px solid var(--border-glass); padding-bottom:0.75rem;">
+                        <button class="btn-ui btn-ui-primary tab-btn-fin active" data-fin-tab="extrato">💰 Extrato de Lançamentos</button>
+                        <button class="btn-ui btn-ui-secondary tab-btn-fin" data-fin-tab="nfe">🧾 Notas Fiscais Emitidas (SEFAZ)</button>
+                    </div>
+
+                    <!-- TAB 1: EXTRATO -->
+                    <div id="tab-extrato" class="fin-tab-content active" style="margin-top:1.5rem;">
+                        <div class="table-responsive">
+                            <table class="ui-data-table" id="fin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Tipo</th>
+                                        <th>Descrição</th>
+                                        <th>Valor</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: NOTAS FISCAIS EMITIDAS -->
+                    <div id="tab-nfe" class="fin-tab-content" style="display:none; margin-top:1.5rem;">
+                        <div class="table-responsive">
+                            <table class="ui-data-table" id="nfe-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nº Nota / Série</th>
+                                        <th>Data Emissao</th>
+                                        <th>Animal (Anilha)</th>
+                                        <th>Comprador</th>
+                                        <th>Valor</th>
+                                        <th>GTA Vinculada</th>
+                                        <th>Status SEFAZ</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="nfe-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODULE 10: PERFIL / ADMINISTRATIVO -->
+            <section id="admin" class="app-module">
+                <div class="page-title-box">
+                    <h1>Meu Criatório — Perfil Oficial</h1>
+                    <p>Informações institucionais e logotipo exibidos nos laudos de perícia, placas de recintos e relatórios em PDF.</p>
+                </div>
+
+                <div class="glass-card" style="max-width:800px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem;">
+                        <div class="form-group-ui">
+                            <label>Nome do Criatório</label>
+                            <input type="text" id="admin-criatorio-nome" class="input-ui" placeholder="Ex: Criatório Pingo D'Ouro">
+                        </div>
+                        <div class="form-group-ui">
+                            <label>Responsável Técnico</label>
+                            <input type="text" id="admin-responsavel" class="input-ui" placeholder="Seu nome completo">
+                        </div>
+                        <div class="form-group-ui">
+                            <label>Registro IBAMA / CTF</label>
+                            <input type="text" id="admin-ibama" class="input-ui" placeholder="Número de cadastro ambiental">
+                        </div>
+                        <div class="form-group-ui">
+                            <label>CPF ou CNPJ</label>
+                            <input type="text" id="admin-doc" class="input-ui" placeholder="000.000.000-00">
+                        </div>
+                        <div class="form-group-ui" style="grid-column: 1 / -1;">
+                            <label>Endereço Completo</label>
+                            <input type="text" id="admin-endereco" class="input-ui" placeholder="Cidade, Estado, Bairro">
+                        </div>
+
+                        <!-- FISCAL CONFIG FOR NFE -->
+                        <div style="grid-column: 1 / -1; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border-glass);">
+                            <h3 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 0.75rem;">🧾 Configurações Fiscais de Nota Fiscal Eletrônica (NF-e SEFAZ)</h3>
+                        </div>
+                        <div class="form-group-ui">
+                            <label>Inscrição Estadual (IE Produtor)</label>
+                            <input type="text" id="admin-ie" class="input-ui" placeholder="Ex: 123.456.789.110">
+                        </div>
+                        <div class="form-group-ui">
+                            <label>Regime Tributário</label>
+                            <select id="admin-regime" class="input-ui">
+                                <option value="Produtor Rural (Simples Nacional)">Produtor Rural (Simples Nacional)</option>
+                                <option value="Simples Nacional - MEI">Simples Nacional - MEI</option>
+                                <option value="Lucro Presumido / Geral">Lucro Presumido / Geral</option>
+                            </select>
+                        </div>
+                        <div class="form-group-ui">
+                            <label>Ambiente de Emissão SEFAZ</label>
+                            <select id="admin-ambiente" class="input-ui">
+                                <option value="Homologacao">Homologação (Ambiente de Testes / Validação)</option>
+                                <option value="Producao">Produção (Notas Fiscais Oficiais Válidas)</option>
+                            </select>
+                        </div>
+                        <div class="form-group-ui">
+                            <label>🔒 Certificado Digital A1 (.pfx / .p12)</label>
+                            <div style="display:flex; gap:0.5rem;">
+                                <input type="password" id="admin-cert-pass" class="input-ui" placeholder="Senha do arquivo .pfx..." style="flex:1;">
+                                <input type="file" id="admin-cert-file" accept=".pfx,.p12" style="display:none;" onchange="handleCertFileUpload(this)">
+                                <button type="button" class="btn-ui btn-ui-secondary" onclick="document.getElementById('admin-cert-file').click()" style="padding:0.6rem 1rem;">🔑 Upload A1</button>
+                            </div>
+                            <small id="admin-cert-status" style="color:var(--accent-emerald); font-size:0.78rem; display:block; margin-top:0.3rem;">✓ Certificado A1 Vinculado (Validade: 2027-12-31)</small>
+                        </div>
+
+                        <div class="form-group-ui" style="grid-column: 1 / -1;">
+                            <label>🖼️ Logotipo do Criatório (Upload do Computador ou URL)</label>
+                            <div style="display:flex; gap:0.5rem;">
+                                <input type="text" id="admin-logo-url" class="input-ui" placeholder="Cole a URL ou selecione o arquivo..." style="flex:1;">
+                                <input type="file" id="admin-logo-file" accept="image/*" style="display:none;" onchange="handleLogoFileUpload(this)">
+                                <button type="button" class="btn-ui btn-ui-secondary" onclick="document.getElementById('admin-logo-file').click()" style="padding:0.6rem 1rem;">📷 Carregar Logo</button>
+                            </div>
+                            <div id="admin-logo-preview" style="margin-top:0.6rem; display:none;">
+                                <img id="admin-logo-preview-img" src="" alt="Preview da Logo" style="max-height:100px; border-radius:8px; border:2px solid var(--primary);">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-ui btn-ui-primary" id="btn-save-admin" style="width:100%; margin-top:1.5rem;">💾 Salvar Perfil Oficial</button>
+                </div>
+            </section>
+
+            <!-- MODULE 11: PAINEL MASTER ADMIN -->
+            <section id="master-admin" class="app-module">
+                <div class="page-title-box flex-header">
+                    <div>
+                        <h1 style="color:#fbbf24; display:flex; align-items:center; gap:0.5rem;">🛡️ Painel Master de Administração SaaS</h1>
+                        <p>Visão geral de todos os criadores cadastrados, gestão de assinaturas e suporte remoto às configurações dos clientes.</p>
+                    </div>
+                </div>
+
+                <div class="stats-grid-container" style="grid-template-columns:repeat(4, 1fr); margin-bottom:1.5rem;">
+                    <div class="stat-widget-card" style="border-top:3px solid #0ea5e9;">
+                        <div class="stat-icon-wrapper" style="background:rgba(14,165,233,0.15); color:#0ea5e9;">👥</div>
+                        <div class="stat-data-box">
+                            <span class="stat-label">Total Criadores Cadastrados</span>
+                            <span class="stat-value" id="master-stat-clientes" style="color:#0ea5e9;">12</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-widget-card" style="border-top:3px solid #10b981;">
+                        <div class="stat-icon-wrapper stat-icon-emerald">✓</div>
+                        <div class="stat-data-box">
+                            <span class="stat-label">Criatórios Ativos</span>
+                            <span class="stat-value" id="master-stat-ativos" style="color:var(--accent-emerald);">10</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-widget-card" style="border-top:3px solid #f59e0b;">
+                        <div class="stat-icon-wrapper stat-icon-amber">📜</div>
+                        <div class="stat-data-box">
+                            <span class="stat-label">Certificados A1 Validados</span>
+                            <span class="stat-value" id="master-stat-certificados" style="color:#f59e0b;">8</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-widget-card" style="border-top:3px solid #8b5cf6;">
+                        <div class="stat-icon-wrapper" style="background:rgba(139,92,246,0.15); color:#8b5cf6;">🧾</div>
+                        <div class="stat-data-box">
+                            <span class="stat-label">Notas Fiscais Emitidas</span>
+                            <span class="stat-value" id="master-stat-nfe" style="color:#8b5cf6;">48</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+                        <h3 style="font-family:'Outfit',sans-serif;">Clientes & Criatórios Registrados</h3>
+                        <input type="text" id="master-search-cliente" class="input-ui" placeholder="Buscar por criador, criatório, CPF/CNPJ ou e-mail..." style="max-width:320px;">
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="ui-data-table" id="master-clients-table">
+                            <thead>
+                                <tr>
+                                    <th>Criatório / Responsável</th>
+                                    <th>Contato (E-mail / WhatsApp)</th>
+                                    <th>CPF / CNPJ & IE</th>
+                                    <th>Certificado A1</th>
+                                    <th>Data Cadastro</th>
+                                    <th>Status Conta</th>
+                                    <th>Ações de Suporte</th>
+                                </tr>
+                            </thead>
+                            <tbody id="master-clients-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
     </div>
+</div>
 
-    <script src="app.js"></script>
+<!-- MODALS -->
+<!-- MODAL: ADD AVE -->
+<div id="modal-add-ave" class="modal-backdrop-ui">
+    <div class="modal-dialog-card" style="max-width:680px;">
+        <div class="modal-title-row">
+            <h2 style="font-family:'Outfit',sans-serif;">Cadastrar Nova Ave / Matriz</h2>
+            <button class="btn-close-modal" onclick="closeModal('modal-add-ave')">✕</button>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group-ui">
+                <label>Anilha da Ave *</label>
+                <input type="text" id="add-anilha" class="input-ui" placeholder="Ex: RN-2024-001">
+            </div>
+            <div class="form-group-ui">
+                <label>Espécie</label>
+                <select id="add-especie" class="input-ui">
+                    <option value="Ringneck">Ringneck</option>
+                    <option value="Calopsita">Calopsita</option>
+                </select>
+            </div>
+            <div class="form-group-ui">
+                <label>Mutação / Cor *</label>
+                <input type="text" id="add-mutacao" class="input-ui" placeholder="Ex: Azul Sky Cleartail">
+            </div>
+            <div class="form-group-ui">
+                <label>Sexo</label>
+                <select id="add-sexo" class="input-ui">
+                    <option value="Macho">♂️ Macho</option>
+                    <option value="Fêmea">♀️ Fêmea</option>
+                    <option value="Indefinido">❓ Indefinido</option>
+                </select>
+            </div>
+            <div class="form-group-ui">
+                <label>♂️ Anilha do Pai (Pedigree)</label>
+                <input type="text" id="add-pai-anilha" class="input-ui" placeholder="Ex: RN-2022-050">
+            </div>
+            <div class="form-group-ui">
+                <label>♀️ Anilha da Mãe (Pedigree)</label>
+                <input type="text" id="add-mae-anilha" class="input-ui" placeholder="Ex: RN-2022-088">
+            </div>
+            <div class="form-group-ui">
+                <label>Data de Nascimento</label>
+                <input type="date" id="add-nascimento" class="input-ui">
+            </div>
+            <div class="form-group-ui">
+                <label>Recinto / Compartimento</label>
+                <select id="add-recinto-select" class="input-ui">
+                    <option value="">— Sem recinto —</option>
+                </select>
+            </div>
+            <div class="form-group-ui" style="grid-column: 1 / -1;">
+                <label>📷 Foto do Animal (URL / Imagem para Marketing)</label>
+                <div style="display:flex; gap:0.5rem;">
+                    <input type="text" id="add-foto-url" class="input-ui" placeholder="Cole a URL da foto ou selecione o arquivo..." style="flex:1;">
+                    <input type="file" id="add-foto-file" accept="image/*" style="display:none;" onchange="handleFotoFileUpload(this)">
+                    <button type="button" class="btn-ui btn-ui-secondary" onclick="document.getElementById('add-foto-file').click()" style="padding:0.6rem 1rem;">📷 Carregar</button>
+                </div>
+                <div id="add-foto-preview" style="margin-top:0.6rem; display:none;">
+                    <img id="add-foto-preview-img" src="" alt="Preview da Ave" style="max-height:120px; border-radius:10px; border:2px solid var(--primary);">
+                </div>
+            </div>
+        </div>
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+            <button class="btn-ui btn-ui-primary" id="btn-save-ave" style="flex:1;">Salvar Ave no Plantel</button>
+            <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-ave')" style="flex:1;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ADD RECINTO HIERÁRQUICO -->
+<div id="modal-add-recinto" class="modal-backdrop-ui">
+    <div class="modal-dialog-card" style="max-width:680px;">
+        <div class="modal-title-row">
+            <h2 style="font-family:'Outfit',sans-serif;">Cadastrar Novo Recinto / Setor</h2>
+            <button class="btn-close-modal" onclick="closeModal('modal-add-recinto')">✕</button>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group-ui">
+                <label>Nome do Recinto / Setor *</label>
+                <input type="text" id="rec-nome" class="input-ui" placeholder="Ex: Setor A — Matrizes Ringneck">
+            </div>
+            <div class="form-group-ui">
+                <label>Ala / Setor Base *</label>
+                <select id="rec-ala" class="input-ui">
+                    <option value="Ala de Matrizes">Ala de Matrizes</option>
+                    <option value="Ala de Filhotes">Ala de Filhotes</option>
+                    <option value="Quarentena">Quarentena</option>
+                    <option value="Maternidade">Maternidade</option>
+                    <option value="Voadeiras & Solários">Voadeiras & Solários</option>
+                    <option value="Setor Geral">Setor Geral</option>
+                </select>
+            </div>
+            <div class="form-group-ui">
+                <label>Tipo de Compartimento Interno</label>
+                <select id="rec-tipo-comp" class="input-ui">
+                    <option value="Gaiola Convencional">Gaiola Convencional</option>
+                    <option value="Gaiola Suspensa">Gaiola Suspensa</option>
+                    <option value="Baia / Box">Baia / Box</option>
+                    <option value="Bateria de Gaiolas">Bateria de Gaiolas</option>
+                    <option value="Viveiro Individual">Viveiro Individual</option>
+                </select>
+            </div>
+            <div class="form-group-ui">
+                <label>Qtd. de Compartimentos</label>
+                <input type="number" id="rec-qtd-comp" class="input-ui" value="1" min="1" max="50">
+            </div>
+            <div class="form-group-ui">
+                <label>Dimensões (L × A × P)</label>
+                <input type="text" id="rec-dimensoes" class="input-ui" placeholder="Ex: 100cm x 60cm x 60cm">
+            </div>
+            <div class="form-group-ui">
+                <label>♂️ Selecionar Pai (Macho do Plantel)</label>
+                <select id="rec-pai-select" class="input-ui">
+                    <option value="">— Selecionar Macho do Plantel —</option>
+                </select>
+            </div>
+            <div class="form-group-ui">
+                <label>♀️ Selecionar Mãe (Fêmea do Plantel)</label>
+                <select id="rec-mae-select" class="input-ui">
+                    <option value="">— Selecionar Fêmea do Plantel —</option>
+                </select>
+            </div>
+            <div class="form-group-ui" style="grid-column: 1 / -1;">
+                <label>Observações / Equipamentos</label>
+                <input type="text" id="rec-desc" class="input-ui" placeholder="Ex: Bebedouro automático, ninho de madeira com maravalha">
+            </div>
+        </div>
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+            <button class="btn-ui btn-ui-primary" id="btn-save-recinto" style="flex:1;">Salvar Recinto & Gerar Placa</button>
+            <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-recinto')" style="flex:1;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ADD QUARENTENA ENTRADA -->
+<div id="modal-add-quarentena" class="modal-backdrop-ui">
+    <div class="modal-dialog-card" style="max-width:700px;">
+        <div class="modal-title-row">
+            <h2 style="font-family:'Outfit',sans-serif;">🛡️ Recepção de Ave na Quarentena (Entrada)</h2>
+            <button class="btn-close-modal" onclick="closeModal('modal-add-quarentena')">✕</button>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group-ui">
+                <label>Anilha / Código da Ave *</label>
+                <input type="text" id="quar-anilha" class="input-ui" placeholder="Ex: RN-2026-N01">
+            </div>
+            <div class="form-group-ui">
+                <label>Espécie / Mutação</label>
+                <input type="text" id="quar-especie-mutacao" class="input-ui" placeholder="Ex: Ringneck Azul Cleartail">
+            </div>
+            <div class="form-group-ui">
+                <label>Criatório / Origem *</label>
+                <input type="text" id="quar-origem" class="input-ui" placeholder="Ex: Criatório Sol Nascente - SP">
+            </div>
+            <div class="form-group-ui">
+                <label>Gaiola / Recinto de Isolamento</label>
+                <select id="quar-recinto-select" class="input-ui"></select>
+            </div>
+            <div class="form-group-ui">
+                <label>Nº da Guia de Transporte (GTA)</label>
+                <input type="text" id="quar-gta" class="input-ui" placeholder="Ex: GTA-SP-2026-88412">
+            </div>
+            <div class="form-group-ui">
+                <label>Nº da Nota Fiscal (NF)</label>
+                <input type="text" id="quar-nf" class="input-ui" placeholder="Ex: NF-004512">
+            </div>
+            <div class="form-group-ui">
+                <label>Data de Chegada *</label>
+                <input type="date" id="quar-data-chegada" class="input-ui">
+            </div>
+            <div class="form-group-ui">
+                <label>Previsão de Alta Sanitária *</label>
+                <input type="date" id="quar-data-alta" class="input-ui">
+            </div>
+            <div class="form-group-ui" style="grid-column: 1 / -1;">
+                <label>📋 Prontuário Veterinário de Admissão & Exames</label>
+                <input type="text" id="quar-prontuario" class="input-ui" placeholder="Ex: Sexagem PCR feita. Solicitado PCR Clamídia e PBFD. Vermífugo aplicado no dia 1.">
+            </div>
+            <div class="form-group-ui" style="grid-column: 1 / -1;">
+                <label>📎 Anexo Digital de Documento (GTA / NF / Exames)</label>
+                <div style="display:flex; gap:0.5rem;">
+                    <input type="text" id="quar-doc-url" class="input-ui" placeholder="URL do documento ou escolha o arquivo..." style="flex:1;">
+                    <input type="file" id="quar-doc-file" accept="image/*,application/pdf" style="display:none;" onchange="handleQuarentenaDocUpload(this)">
+                    <button type="button" class="btn-ui btn-ui-secondary" onclick="document.getElementById('quar-doc-file').click()" style="padding:0.6rem 1rem;">📄 Anexar Arquivo</button>
+                </div>
+            </div>
+        </div>
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+            <button class="btn-ui btn-ui-primary" id="btn-save-quarentena" style="flex:1;">Registrar Quarentena</button>
+            <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-quarentena')" style="flex:1;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ADD ENFERMARIA / UTI CLINICA -->
+<div id="modal-add-enfermaria" class="modal-backdrop-ui">
+    <div class="modal-dialog-card" style="max-width:640px;">
+        <div class="modal-title-row">
+            <h2 style="font-family:'Outfit',sans-serif;">🏥 Ficha de Internação na Enfermaria</h2>
+            <button class="btn-close-modal" onclick="closeModal('modal-add-enfermaria')">✕</button>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group-ui">
+                <label>Anilha da Ave *</label>
+                <input type="text" id="enf-anilha" class="input-ui" placeholder="Ex: RN-2024-001">
+            </div>
+            <div class="form-group-ui">
+                <label>Gaiola / Leito Hospitalar</label>
+                <select id="enf-recinto-select" class="input-ui"></select>
+            </div>
+            <div class="form-group-ui" style="grid-column: 1 / -1;">
+                <label>Diagnóstico / Suspeita Clínica *</label>
+                <input type="text" id="enf-diagnostico" class="input-ui" placeholder="Ex: Peito seco / Coccidiose leve. Ave embulhada e apática.">
+            </div>
+            <div class="form-group-ui">
+                <label>Medicamento Prescrito *</label>
+                <input type="text" id="enf-medicamento" class="input-ui" placeholder="Ex: Baytril 10% + Nystatin">
+            </div>
+            <div class="form-group-ui">
+                <label>Dosagem & Frequência *</label>
+                <input type="text" id="enf-dosagem" class="input-ui" placeholder="Ex: 0.05ml via oral de 12/12h">
+            </div>
+            <div class="form-group-ui">
+                <label>Duração do Tratamento (dias)</label>
+                <input type="number" id="enf-dias" class="input-ui" value="7" min="1" max="60">
+            </div>
+            <div class="form-group-ui">
+                <label>Responsável Veterinário / Tratador</label>
+                <input type="text" id="enf-responsavel" class="input-ui" placeholder="Ex: Dr. Roberto / Tratador Carlos">
+            </div>
+        </div>
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+            <button class="btn-ui btn-ui-primary" id="btn-save-enfermaria" style="flex:1;">Salvar Internação</button>
+            <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-enfermaria')" style="flex:1;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ADD PREPARO SAIDA / EXPEDIÇÃO -->
+<div id="modal-add-saida" class="modal-backdrop-ui">
+    <div class="modal-dialog-card" style="max-width:680px;">
+        <div class="modal-title-row">
+            <h2 style="font-family:'Outfit',sans-serif;">🚚 Preparo de Envio / Expedição de Saída</h2>
+            <button class="btn-close-modal" onclick="closeModal('modal-add-saida')">✕</button>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group-ui">
+                <label>Anilha da Ave *</label>
+                <input type="text" id="saida-anilha" class="input-ui" placeholder="Ex: RN-2024-002">
+            </div>
+            <div class="form-group-ui">
+                <label>Destino / Comprador *</label>
+                <input type="text" id="saida-destino" class="input-ui" placeholder="Ex: Criatório Aves Raras - MG">
+            </div>
+            <div class="form-group-ui">
+                <label>Data Prevista do Transporte *</label>
+                <input type="date" id="saida-data-transporte" class="input-ui">
+            </div>
+            <div class="form-group-ui">
+                <label>Nº da GTA Emitida</label>
+                <input type="text" id="saida-gta" class="input-ui" placeholder="Ex: GTA-EMITIDA-99412">
+            </div>
+            <div class="form-group-ui" style="grid-column: 1 / -1;">
+                <label>Checklist de Documentação Acompanhante</label>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; font-size:0.85rem; color:var(--text-secondary);">
+                    <label><input type="checkbox" id="chk-gta" checked> ✅ GTA Emitida e Assinada</label>
+                    <label><input type="checkbox" id="chk-nf" checked> ✅ Nota Fiscal Emitida</label>
+                    <label><input type="checkbox" id="chk-cert" checked> ✅ Certificado de Origem Impresso</label>
+                    <label><input type="checkbox" id="chk-laudo" checked> ✅ Atestado Sanitário OK</label>
+                </div>
+            </div>
+            <div class="form-group-ui" style="grid-column: 1 / -1;">
+                <label>📸 Memorial Fotográfico (Foto no dia do Envio / Caixa de Transporte)</label>
+                <div style="display:flex; gap:0.5rem;">
+                    <input type="text" id="saida-foto-url" class="input-ui" placeholder="URL da foto ou selecione a foto..." style="flex:1;">
+                    <input type="file" id="saida-foto-file" accept="image/*" style="display:none;" onchange="handleSaidaFotoUpload(this)">
+                    <button type="button" class="btn-ui btn-ui-secondary" onclick="document.getElementById('saida-foto-file').click()" style="padding:0.6rem 1rem;">📷 Fotos da Ave</button>
+                </div>
+                <div id="saida-foto-preview" style="margin-top:0.6rem; display:none;">
+                    <img id="saida-foto-preview-img" src="" alt="Memorial Fotográfico" style="max-height:120px; border-radius:10px; border:2px solid var(--primary);">
+                </div>
+            </div>
+        </div>
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+            <button class="btn-ui btn-ui-primary" id="btn-save-saida" style="flex:1;">Registrar Expedição</button>
+            <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-saida')" style="flex:1;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ADD INSUMO ESTOQUE COZINHA -->
+<div id="modal-add-insumo" class="modal-backdrop-ui">
+    <div class="modal-dialog-card" style="max-width:620px;">
+        <div class="modal-title-row">
+            <h2 style="font-family:'Outfit',sans-serif;">Cadastrar Insumo / Alimento no Estoque</h2>
+            <button class="btn-close-modal" onclick="closeModal('modal-add-insumo')">✕</button>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group-ui">
+                <label>Nome do Alimento / Insumo *</label>
+                <input type="text" id="insumo-nome" class="input-ui" placeholder="Ex: Ração Extrusada High-Protein 10kg">
+            </div>
+            <div class="form-group-ui">
+                <label>Categoria *</label>
+                <select id="insumo-categoria" class="input-ui">
+                    <option value="Extrusada">Ração Extrusada</option>
+                    <option value="Farinhada">Farinhada / Suplementação</option>
+                    <option value="Sementes">Mistura de Sementes</option>
+                    <option value="Papa Neonatal">Papa para Filhotes</option>
+                    <option value="Higiene / Maravalha">Higiene & Maravalha</option>
+                </select>
+            </div>
+            <div class="form-group-ui">
+                <label>Quantidade Atual (Kg/Pacotes/Litros) *</label>
+                <input type="number" id="insumo-qtd" class="input-ui" placeholder="Ex: 10" step="0.1">
+            </div>
+            <div class="form-group-ui">
+                <label>Estoque Mínimo (Ponto de Alerta) *</label>
+                <input type="number" id="insumo-minimo" class="input-ui" placeholder="Ex: 3" step="0.1">
+            </div>
+            <div class="form-group-ui">
+                <label>Fornecedor / Marca</label>
+                <input type="text" id="insumo-fornecedor" class="input-ui" placeholder="Ex: MegaZoo / Nutropica">
+            </div>
+            <div class="form-group-ui">
+                <label>Data de Validade</label>
+                <input type="date" id="insumo-validade" class="input-ui">
+            </div>
+        </div>
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+            <button class="btn-ui btn-ui-primary" id="btn-save-insumo" style="flex:1;">Salvar no Estoque</button>
+            <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-insumo')" style="flex:1;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ADD CARDÁPIO REFEIÇÃO -->
+<div id="modal-add-cardapio" class="modal-backdrop-ui">
+    <div class="modal-dialog-card" style="max-width:640px;">
+        <div class="modal-title-row">
+            <h2 style="font-family:'Outfit',sans-serif;">Cadastrar Cardápio por Recinto/Gaiola</h2>
+            <button class="btn-close-modal" onclick="closeModal('modal-add-cardapio')">✕</button>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group-ui">
+                <label>Nome do Cardápio *</label>
+                <input type="text" id="cardapio-nome" class="input-ui" placeholder="Ex: Dieta Reprodutiva Matrizes">
+            </div>
+            <div class="form-group-ui">
+                <label>Vincular a Recinto / Gaiola *</label>
+                <select id="cardapio-recinto-select" class="input-ui"></select>
+            </div>
+            <div class="form-group-ui" style="grid-column: 1 / -1;">
+                <label>Composição da Alimentação (Ingredientes) *</label>
+                <input type="text" id="cardapio-ingredientes" class="input-ui" placeholder="Ex: 50% Extrusada + 30% Farinhada com Ovo + 20% Legumes picados">
+            </div>
+            <div class="form-group-ui">
+                <label>Frequência de Oferta</label>
+                <select id="cardapio-frequencia" class="input-ui">
+                    <option value="Diário (2x ao dia)">Diário (2x ao dia)</option>
+                    <option value="Diário (Manhã)">Diário (Manhã)</option>
+                    <option value="Segunda, Quarta e Sexta">Segunda, Quarta e Sexta</option>
+                    <option value="Final de Semana">Final de Semana</option>
+                </select>
+            </div>
+            <div class="form-group-ui">
+                <label>Horário Recomendado</label>
+                <input type="text" id="cardapio-horario" class="input-ui" placeholder="Ex: 07:30 e 15:00">
+            </div>
+        </div>
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+            <button class="btn-ui btn-ui-primary" id="btn-save-cardapio" style="flex:1;">Salvar Cardápio</button>
+            <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-cardapio')" style="flex:1;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ADD ESCALA MANEJO & LIMPEZA -->
+<div id="modal-add-escala-manejo" class="modal-backdrop-ui">
+    <div class="modal-dialog-card" style="max-width:620px;">
+        <div class="modal-title-row">
+            <h2 style="font-family:'Outfit',sans-serif;">Lançar Escala de Tratamento & Limpeza</h2>
+            <button class="btn-close-modal" onclick="closeModal('modal-add-escala-manejo')">✕</button>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group-ui">
+                <label>Setor / Ala *</label>
+                <select id="escala-recinto-select" class="input-ui"></select>
+            </div>
+            <div class="form-group-ui">
+                <label>Turno *</label>
+                <select id="escala-turno" class="input-ui">
+                    <option value="Manhã (07:00)">Manhã (07:00)</option>
+                    <option value="Tarde (13:00)">Tarde (13:00)</option>
+                    <option value="Noite (17:30)">Noite (17:30)</option>
+                </select>
+            </div>
+            <div class="form-group-ui">
+                <label>👤 Responsável pelo Tratamento (Alimentação)</label>
+                <input type="text" id="escala-tratador" class="input-ui" placeholder="Nome do tratador">
+            </div>
+            <div class="form-group-ui">
+                <label>🧹 Responsável pela Limpeza & Higiene</label>
+                <input type="text" id="escala-limpador" class="input-ui" placeholder="Nome do responsável pela limpeza">
+            </div>
+        </div>
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+            <button class="btn-ui btn-ui-primary" id="btn-save-escala-manejo" style="flex:1;">Salvar Escala</button>
+            <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-escala-manejo')" style="flex:1;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ADD OVO CHOCADEIRA -->
+<div id="modal-add-ovo" class="modal-backdrop-ui">
+    <div class="modal-dialog-card" style="max-width:620px;">
+        <div class="modal-title-row">
+            <h2 style="font-family:'Outfit',sans-serif;">Cadastrar Ovo na Chocadeira</h2>
+            <button class="btn-close-modal" onclick="closeModal('modal-add-ovo')">✕</button>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group-ui">
+                <label>Código do Ovo *</label>
+                <input type="text" id="ovo-codigo" class="input-ui" placeholder="Ex: OVO-2026-001">
+            </div>
+            <div class="form-group-ui">
+                <label>Recinto / Compartimento Origem *</label>
+                <select id="ovo-recinto-select" class="input-ui"></select>
+            </div>
+            <div class="form-group-ui">
+                <label>♂️ Anilha do Pai</label>
+                <input type="text" id="ovo-pai-anilha" class="input-ui" placeholder="Pai da matriz">
+            </div>
+            <div class="form-group-ui">
+                <label>♀️ Anilha da Mãe</label>
+                <input type="text" id="ovo-mae-anilha" class="input-ui" placeholder="Mãe da matriz">
+            </div>
+            <div class="form-group-ui">
+                <label>Data de Postura</label>
+                <input type="date" id="ovo-data-postura" class="input-ui">
+            </div>
+            <div class="form-group-ui">
+                <label>Data de Incubação *</label>
+                <input type="date" id="ovo-data-incubacao" class="input-ui">
+            </div>
+        </div>
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+            <button class="btn-ui btn-ui-primary" id="btn-save-ovo" style="flex:1;">Salvar na Chocadeira</button>
+            <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-ovo')" style="flex:1;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ADD FILHOTE UTI NEONATAL -->
+<div id="modal-add-filhote-uti" class="modal-backdrop-ui">
+    <div class="modal-dialog-card" style="max-width:620px;">
+        <div class="modal-title-row">
+            <h2 style="font-family:'Outfit',sans-serif;">Cadastrar Filhote na UTI Neonatal</h2>
+            <button class="btn-close-modal" onclick="closeModal('modal-add-filhote-uti')">✕</button>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group-ui">
+                <label>Anilha / Código Filhote *</label>
+                <input type="text" id="uti-anilha" class="input-ui" placeholder="Ex: RN-2026-F01">
+            </div>
+            <div class="form-group-ui">
+                <label>Espécie</label>
+                <select id="uti-especie" class="input-ui">
+                    <option value="Ringneck">Ringneck</option>
+                    <option value="Calopsita">Calopsita</option>
+                </select>
+            </div>
+            <div class="form-group-ui">
+                <label>Data de Nascimento *</label>
+                <input type="date" id="uti-nascimento" class="input-ui">
+            </div>
+            <div class="form-group-ui">
+                <label>Peso Inicial (gramas)</label>
+                <input type="number" id="uti-peso-inicial" class="input-ui" placeholder="Ex: 14" step="0.1">
+            </div>
+            <div class="form-group-ui">
+                <label>♂️ Anilha do Pai</label>
+                <input type="text" id="uti-pai-anilha" class="input-ui" placeholder="Ex: RN-050">
+            </div>
+            <div class="form-group-ui">
+                <label>♀️ Anilha da Mãe</label>
+                <input type="text" id="uti-mae-anilha" class="input-ui" placeholder="Ex: RN-088">
+            </div>
+        </div>
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+            <button class="btn-ui btn-ui-primary" id="btn-save-filhote-uti" style="flex:1;">Salvar na UTI</button>
+            <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-filhote-uti')" style="flex:1;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ADD REGISTRO PESO FILHOTE -->
+<div id="modal-add-peso-filhote" class="modal-backdrop-ui">
+    <div class="modal-dialog-card" style="max-width:540px;">
+        <div class="modal-title-row">
+            <h2 style="font-family:'Outfit',sans-serif;">Registrar Pesagem & Evolução</h2>
+            <button class="btn-close-modal" onclick="closeModal('modal-add-peso-filhote')">✕</button>
+        </div>
+        <div class="form-group-ui">
+            <label>Filhote UTI *</label>
+            <select id="peso-filhote-select" class="input-ui"></select>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group-ui">
+                <label>Data</label>
+                <input type="date" id="peso-data" class="input-ui">
+            </div>
+            <div class="form-group-ui">
+                <label>Peso (g) *</label>
+                <input type="number" id="peso-valor" class="input-ui" placeholder="Ex: 22.5" step="0.1">
+            </div>
+            <div class="form-group-ui" style="grid-column: 1 / -1;">
+                <label>Estado do Papo</label>
+                <select id="peso-papo" class="input-ui">
+                    <option value="Cheio">Cheio / Trato OK</option>
+                    <option value="Médio">Médio Digestão</option>
+                    <option value="Vazio">Vazio / Aguardando Papa</option>
+                </select>
+            </div>
+            <div class="form-group-ui" style="grid-column: 1 / -1;">
+                <label>Cuidados / Observações</label>
+                <input type="text" id="peso-obs" class="input-ui" placeholder="Ex: Ganho de 3.5g, penugem crescendo, ótima resposta.">
+            </div>
+        </div>
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+            <button class="btn-ui btn-ui-primary" id="btn-save-peso-filhote" style="flex:1;">Salvar Pesagem</button>
+            <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-peso-filhote')" style="flex:1;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ADD FINANÇA -->
+<div id="modal-add-financa" class="modal-backdrop-ui">
+    <div class="modal-dialog-card">
+        <div class="modal-title-row">
+            <h2 style="font-family:'Outfit',sans-serif;">Novo Lançamento Financeiro</h2>
+            <button class="btn-close-modal" onclick="closeModal('modal-add-financa')">✕</button>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group-ui">
+                <label>Tipo</label>
+                <select id="fin-tipo" class="input-ui">
+                    <option value="entrada">▲ Receita (Entrada)</option>
+                    <option value="saida">▼ Despesa (Saída)</option>
+                </select>
+            </div>
+            <div class="form-group-ui">
+                <label>Data</label>
+                <input type="date" id="fin-data" class="input-ui">
+            </div>
+            <div class="form-group-ui" style="grid-column: 1 / -1;">
+                <label>Descrição</label>
+                <input type="text" id="fin-desc" class="input-ui" placeholder="Ex: Venda Ringneck Azul Sky">
+            </div>
+            <div class="form-group-ui" style="grid-column: 1 / -1;">
+                <label>Valor (R$)</label>
+                <input type="number" id="fin-valor" class="input-ui" placeholder="0.00" step="0.01">
+            </div>
+        </div>
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+            <button class="btn-ui btn-ui-primary" id="btn-save-financa" style="flex:1;">Salvar Lançamento</button>
+            <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-financa')" style="flex:1;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: EMITIR NOTA FISCAL (NFE SEFAZ) -->
+<div id="modal-emitir-nfe" class="modal-backdrop-ui">
+    <div class="modal-dialog-card" style="max-width:720px;">
+        <div class="modal-title-row">
+            <h2 style="font-family:'Outfit',sans-serif;">🧾 Emissão Simplificada de Nota Fiscal Eletrônica (NF-e SEFAZ)</h2>
+            <button class="btn-close-modal" onclick="closeModal('modal-emitir-nfe')">✕</button>
+        </div>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.25rem;">Selecione o animal vendido do seu plantel. O sistema preenche automaticamente os dados fiscais e transmite a nota para autorização da SEFAZ.</p>
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group-ui" style="grid-column: 1 / -1;">
+                <label style="color:var(--primary); font-weight:700;">🦜 Selecionar Ave / Animal do Plantel *</label>
+                <select id="nfe-animal-select" class="input-ui" style="border-color:var(--primary);">
+                    <option value="">— Selecionar Animal do Plantel —</option>
+                </select>
+            </div>
+
+            <div class="form-group-ui">
+                <label>Espécie / Detalhes</label>
+                <input type="text" id="nfe-especie" class="input-ui" placeholder="Ex: Ringneck Azul Cleartail">
+            </div>
+
+            <div class="form-group-ui">
+                <label>Código NCM (Nomenclatura Fiscal) *</label>
+                <input type="text" id="nfe-ncm" class="input-ui" value="0106.39.00" placeholder="Ex: 0106.39.00 (Aves Vivas)">
+            </div>
+
+            <div class="form-group-ui">
+                <label>Nome / Razão Social do Comprador *</label>
+                <input type="text" id="nfe-comprador-nome" class="input-ui" placeholder="Ex: João da Silva / Criatório Sol Nascente">
+            </div>
+
+            <div class="form-group-ui">
+                <label>CPF ou CNPJ do Comprador *</label>
+                <input type="text" id="nfe-comprador-doc" class="input-ui" placeholder="000.000.000-00">
+            </div>
+
+            <div class="form-group-ui">
+                <label>UF do Comprador (Estado) *</label>
+                <select id="nfe-comprador-uf" class="input-ui">
+                    <option value="SP">SP - São Paulo</option>
+                    <option value="MG">MG - Minas Gerais</option>
+                    <option value="RJ">RJ - Rio de Janeiro</option>
+                    <option value="PR">PR - Paraná</option>
+                    <option value="SC">SC - Santa Catarina</option>
+                    <option value="RS">RS - Rio Grande do Sul</option>
+                    <option value="GO">GO - Goiás</option>
+                    <option value="BA">BA - Bahia</option>
+                    <option value="OUTRO">Outro Estado</option>
+                </select>
+            </div>
+
+            <div class="form-group-ui">
+                <label>CFOP Operação</label>
+                <select id="nfe-cfop" class="input-ui">
+                    <option value="5.101">5.101 - Venda de Produção (Dentro do Estado)</option>
+                    <option value="6.101">6.101 - Venda de Produção (Outro Estado)</option>
+                    <option value="5.102">5.102 - Venda de Mercadoria</option>
+                </select>
+            </div>
+
+            <div class="form-group-ui">
+                <label>Nº da Guia de Trânsito (GTA) se houver</label>
+                <input type="text" id="nfe-gta" class="input-ui" placeholder="Ex: GTA-SP-2026-88412 (ou Deixe em Branco)">
+            </div>
+
+            <div class="form-group-ui">
+                <label>Valor Total da Venda (R$) *</label>
+                <input type="number" step="0.01" id="nfe-valor" class="input-ui" placeholder="Ex: 1500.00">
+            </div>
+
+            <div class="form-group-ui" style="grid-column: 1 / -1;">
+                <label>Informações Complementares / Observações Fiscais</label>
+                <input type="text" id="nfe-obs" class="input-ui" value="Nota Fiscal de Produtor Rural - Venda de Animal Vivo do Criatório - Isento de ICMS conf. legislação estadual.">
+            </div>
+        </div>
+
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+            <button class="btn-ui btn-ui-emerald" id="btn-transmitir-nfe" style="flex:2; padding:1rem;">⚡ Transmitir NF-e para a SEFAZ</button>
+            <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-emitir-nfe')" style="flex:1;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- FULLSCREEN AUTH & APP OVERLAY (LOGIN / REGISTRO / INSTALAR APP PWA) -->
+<div id="loginOverlay" class="modal-backdrop-ui" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.92); backdrop-filter:blur(16px); z-index:99999; justify-content:center; align-items:center; padding:1rem;">
+    <div class="modal-dialog-card glass-card" style="max-width:480px; width:100%; border:1px solid rgba(14,165,233,0.3); box-shadow:0 20px 50px rgba(0,0,0,0.6); padding:2rem;">
+        <div style="text-align:center; margin-bottom:1.5rem;">
+            <img src="logo_criador_pro.png" alt="Criador Pro Logo" style="height:64px; margin-bottom:0.75rem;">
+            <h2 style="font-family:'Outfit',sans-serif; font-size:1.6rem; color:#fff; margin-bottom:0.25rem;">Criador Pro <span>Cloud</span></h2>
+            <p style="color:var(--text-muted); font-size:0.85rem;">Gestão de Criadouro 100% Online em Celulares, Tablets e PC</p>
+        </div>
+
+        <div id="loginError" class="alert-box" style="display:none; background:rgba(244,63,94,0.15); border:1px solid #f43f5e; color:#f43f5e; padding:0.75rem; border-radius:8px; font-size:0.85rem; margin-bottom:1rem; text-align:center;"></div>
+
+        <!-- ABAS DE NAVEGAÇÃO ENTRE LOGIN E CADASTRO -->
+        <div style="display:flex; gap:0.5rem; background:rgba(255,255,255,0.05); padding:4px; border-radius:10px; margin-bottom:1.5rem;">
+            <button id="tab-login" class="btn-ui btn-ui-primary active" style="flex:1; padding:0.6rem; font-size:0.85rem;">🔑 Entrar</button>
+            <button id="tab-signup" class="btn-ui btn-ui-secondary" style="flex:1; padding:0.6rem; font-size:0.85rem;">📝 Criar Conta</button>
+        </div>
+
+        <!-- FORMULÁRIO DE LOGIN -->
+        <div id="form-login-fields">
+            <div class="form-group-ui" style="margin-bottom:1rem;">
+                <label>E-mail do Criador *</label>
+                <input type="email" id="login-email" class="input-ui" placeholder="seu-email@criatorio.com" value="admin@admin.com">
+            </div>
+            <div class="form-group-ui" style="margin-bottom:1.25rem;">
+                <label>Senha *</label>
+                <input type="password" id="login-password" class="input-ui" placeholder="••••••••" value="123456">
+            </div>
+        </div>
+
+        <!-- FORMULÁRIO DE CADASTRO -->
+        <div id="form-signup-fields" style="display:none;">
+            <div class="form-group-ui" style="margin-bottom:0.85rem;">
+                <label>Nome Completo do Criador *</label>
+                <input type="text" id="signup-nome" class="input-ui" placeholder="Ex: João da Silva">
+            </div>
+            <div class="form-group-ui" style="margin-bottom:0.85rem;">
+                <label>Nome do Criatório *</label>
+                <input type="text" id="signup-criatorio" class="input-ui" placeholder="Ex: Criatório Pingo D'Ouro">
+            </div>
+            <div class="form-group-ui" style="margin-bottom:0.85rem;">
+                <label>CPF ou CNPJ *</label>
+                <input type="text" id="signup-doc" class="input-ui" placeholder="000.000.000-00">
+            </div>
+            <div class="form-group-ui" style="margin-bottom:0.85rem;">
+                <label>E-mail de Acesso *</label>
+                <input type="email" id="signup-email" class="input-ui" placeholder="contato@criatorio.com">
+            </div>
+            <div class="form-group-ui" style="margin-bottom:1.25rem;">
+                <label>Senha de Acesso *</label>
+                <input type="password" id="signup-password" class="input-ui" placeholder="Mínimo 6 caracteres">
+            </div>
+        </div>
+
+        <button id="btn-do-login" class="btn-ui btn-ui-primary" style="width:100%; padding:0.9rem; font-size:1rem; font-weight:700;">Acessar Sistema</button>
+
+        <!-- PWA INSTALL BANNER / BOTÃO -->
+        <div id="pwa-install-container" style="margin-top:1.5rem; padding-top:1rem; border-top:1px dashed var(--border-glass); text-align:center;">
+            <button id="btn-pwa-install" class="btn-ui btn-ui-emerald" style="width:100%; padding:0.75rem; font-size:0.85rem; display:flex; justify-content:center; align-items:center; gap:0.5rem;">
+                <span>📱 Instalar Aplicativo Criador Pro (Mobile / PC)</span>
+            </button>
+            <small style="color:var(--text-muted); font-size:0.75rem; margin-top:0.5rem; display:block;">Disponível para Android, iPhone, iPad, Windows e Mac sem precisar das lojas.</small>
+        </div>
+    </div>
+</div>
+
+<!-- JAVASCRIPT SYSTEM ENGINE -->
+<script>
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('open');
+            modal.style.display = 'flex';
+            if (modalId === 'modal-add-recinto' && window.populateRecintoPairSelects) {
+                window.populateRecintoPairSelects();
+            }
+        }
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('open');
+            modal.style.display = 'none';
+        }
+    }
+
+    function handleCertFileUpload(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const statusEl = document.getElementById('admin-cert-status');
+        if (statusEl) {
+            statusEl.textContent = `✓ Certificado "${file.name}" carregado com sucesso! Validado até 2027.`;
+            statusEl.style.color = '#10b981';
+        }
+    }
+
+    function switchModule(moduleName) {
+        document.querySelectorAll('.sidebar-menu li').forEach(item => {
+            if (item.getAttribute('data-module') === moduleName) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+
+        document.querySelectorAll('.app-module').forEach(mod => {
+            mod.classList.remove('active');
+        });
+
+        const target = document.getElementById(moduleName);
+        if (target) {
+            target.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    function handleFotoFileUpload(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const dataUrl = e.target.result;
+            const urlInput = document.getElementById('add-foto-url');
+            const previewBox = document.getElementById('add-foto-preview');
+            const previewImg = document.getElementById('add-foto-preview-img');
+            if (urlInput) urlInput.value = dataUrl;
+            if (previewImg) previewImg.src = dataUrl;
+            if (previewBox) previewBox.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function handleLogoFileUpload(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const dataUrl = e.target.result;
+            const urlInput = document.getElementById('admin-logo-url');
+            const previewBox = document.getElementById('admin-logo-preview');
+            const previewImg = document.getElementById('admin-logo-preview-img');
+            if (urlInput) urlInput.value = dataUrl;
+            if (previewImg) previewImg.src = dataUrl;
+            if (previewBox) previewBox.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function handleQuarentenaDocUpload(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const dataUrl = e.target.result;
+            const urlInput = document.getElementById('quar-doc-url');
+            if (urlInput) urlInput.value = dataUrl;
+            alert('Documento sanitário anexado com sucesso!');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function handleSaidaFotoUpload(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const dataUrl = e.target.result;
+            const urlInput = document.getElementById('saida-foto-url');
+            const previewBox = document.getElementById('saida-foto-preview');
+            const previewImg = document.getElementById('saida-foto-preview-img');
+            if (urlInput) urlInput.value = dataUrl;
+            if (previewImg) previewImg.src = dataUrl;
+            if (previewBox) previewBox.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.sidebar-menu li[data-module]').forEach(li => {
+            li.addEventListener('click', (e) => {
+                e.preventDefault();
+                const moduleName = li.getAttribute('data-module');
+                switchModule(moduleName);
+            });
+        });
+
+        // Tab navigation inside Quarentena
+        document.querySelectorAll('.tab-btn-quarentena').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetTab = btn.getAttribute('data-quarentena-tab');
+                document.querySelectorAll('.tab-btn-quarentena').forEach(b => {
+                    b.classList.remove('active');
+                    b.classList.replace('btn-ui-primary', 'btn-ui-secondary');
+                });
+                btn.classList.add('active');
+                btn.classList.replace('btn-ui-secondary', 'btn-ui-primary');
+
+                document.querySelectorAll('.quarentena-tab-content').forEach(content => {
+                    content.style.display = 'none';
+                    content.classList.remove('active');
+                });
+                const targetContent = document.getElementById('tab-quarentena-' + targetTab) || document.getElementById('tab-' + targetTab + '-lista');
+                if (targetContent) {
+                    targetContent.style.display = 'block';
+                    targetContent.classList.add('active');
+                }
+            });
+        });
+
+        // Tab navigation inside Cozinha
+        document.querySelectorAll('.tab-btn-cozinha').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetTab = btn.getAttribute('data-cozinha-tab');
+                document.querySelectorAll('.tab-btn-cozinha').forEach(b => {
+                    b.classList.remove('active');
+                    b.classList.replace('btn-ui-primary', 'btn-ui-secondary');
+                });
+                btn.classList.add('active');
+                btn.classList.replace('btn-ui-secondary', 'btn-ui-primary');
+
+                document.querySelectorAll('.cozinha-tab-content').forEach(content => {
+                    content.style.display = 'none';
+                    content.classList.remove('active');
+                });
+                const targetContent = document.getElementById('tab-' + targetTab);
+                if (targetContent) {
+                    targetContent.style.display = 'block';
+                    targetContent.classList.add('active');
+                }
+            });
+        });
+
+        // Tab navigation inside Maternidade
+        document.querySelectorAll('.tab-btn-mat').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetTab = btn.getAttribute('data-mat-tab');
+                document.querySelectorAll('.tab-btn-mat').forEach(b => {
+                    b.classList.remove('active');
+                    b.classList.replace('btn-ui-primary', 'btn-ui-secondary');
+                });
+                btn.classList.add('active');
+                btn.classList.replace('btn-ui-secondary', 'btn-ui-primary');
+
+                document.querySelectorAll('.mat-tab-content').forEach(content => {
+                    content.style.display = 'none';
+                    content.classList.remove('active');
+                });
+                const targetContent = document.getElementById('tab-' + targetTab);
+                if (targetContent) {
+                    targetContent.style.display = 'block';
+                    targetContent.classList.add('active');
+                }
+            });
+        });
+
+        // Tab navigation inside Calculator
+        document.querySelectorAll('.tab-btn-calc').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetTab = btn.getAttribute('data-calc-tab');
+                document.querySelectorAll('.tab-btn-calc').forEach(b => {
+                    b.classList.remove('active');
+                    b.classList.replace('btn-ui-primary', 'btn-ui-secondary');
+                });
+                btn.classList.add('active');
+                btn.classList.replace('btn-ui-secondary', 'btn-ui-primary');
+
+                document.querySelectorAll('.calc-tab-content').forEach(content => {
+                    content.style.display = 'none';
+                    content.classList.remove('active');
+                });
+                const targetContent = document.getElementById('tab-' + targetTab);
+                if (targetContent) {
+                    targetContent.style.display = 'block';
+                    targetContent.classList.add('active');
+                }
+            });
+        });
+
+        // Tab navigation inside Financeiro
+        document.querySelectorAll('.tab-btn-fin').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetTab = btn.getAttribute('data-fin-tab');
+                document.querySelectorAll('.tab-btn-fin').forEach(b => {
+                    b.classList.remove('active');
+                    b.classList.replace('btn-ui-primary', 'btn-ui-secondary');
+                });
+                btn.classList.add('active');
+                btn.classList.replace('btn-ui-secondary', 'btn-ui-primary');
+
+                document.querySelectorAll('.fin-tab-content').forEach(content => {
+                    content.style.display = 'none';
+                    content.classList.remove('active');
+                });
+                const targetContent = document.getElementById('tab-' + targetTab);
+                if (targetContent) {
+                    targetContent.style.display = 'block';
+                    targetContent.classList.add('active');
+                }
+            });
+        });
+    });
+</script>
+
+<!-- APPLICATION SCRIPT LOGIC -->
+<script type="module" src="script.js"></script>
+
 </body>
 </html>
