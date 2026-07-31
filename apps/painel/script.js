@@ -4574,7 +4574,49 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
             maeSelect.innerHTML = '<option value="">— Selecionar Fêmea do Plantel —</option>' +
                 femeas.map(a => `<option value="${escapeHtml(a.id)}">[${escapeHtml(a.anilha)}] ${escapeHtml(a.especie)} - ${escapeHtml(a.mutacao)}</option>`).join('');
         }
+    window.handleSaveAve = async () => {
+        const anilha = document.getElementById('add-anilha')?.value.trim();
+        const mutacao = document.getElementById('add-mutacao')?.value.trim();
+        if (!anilha || !mutacao) return alert('Preencha os campos obrigatórios: Anilha da Ave e Mutação / Cor.');
+
+        const especie = document.getElementById('add-especie')?.value || 'Ringneck';
+        const sexo = document.getElementById('add-sexo')?.value || 'Macho';
+        const pai_anilha = document.getElementById('add-pai-anilha')?.value.trim() || '';
+        const mae_anilha = document.getElementById('add-mae-anilha')?.value.trim() || '';
+        const nascimento = document.getElementById('add-nascimento')?.value || '';
+        const recinto = document.getElementById('add-recinto-select')?.value || '';
+        const foto_url = sanitizeImageUrl(document.getElementById('add-foto-url')?.value || '');
+
+        await DB.addAve({
+            anilha,
+            especie,
+            mutacao,
+            sexo,
+            pai_anilha,
+            mae_anilha,
+            nascimento,
+            recinto,
+            foto_url,
+            categoria: 'Plantel',
+            status: 'Ativo'
+        });
+
+        if (document.getElementById('add-anilha')) document.getElementById('add-anilha').value = '';
+        if (document.getElementById('add-mutacao')) document.getElementById('add-mutacao').value = '';
+        if (document.getElementById('add-pai-anilha')) document.getElementById('add-pai-anilha').value = '';
+        if (document.getElementById('add-mae-anilha')) document.getElementById('add-mae-anilha').value = '';
+        if (document.getElementById('add-nascimento')) document.getElementById('add-nascimento').value = '';
+        if (document.getElementById('add-foto-url')) document.getElementById('add-foto-url').value = '';
+
+        if (window.closeModal) window.closeModal('modal-add-ave');
+        else if (document.getElementById('modal-add-ave')) document.getElementById('modal-add-ave').style.display = 'none';
+
+        renderPlantel();
+        renderDashboard();
+
+        alert(`🎉 Ave ${anilha} cadastrada no plantel com sucesso!`);
     };
+    document.getElementById('btn-save-ave')?.addEventListener('click', window.handleSaveAve);
 
     document.getElementById('btn-add-recinto')?.addEventListener('click', () => {
         window.populateRecintoPairSelects();
@@ -5137,6 +5179,7 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
     renderEnfermaria();
     renderSaida();
     switchAuthTab(false);
+    }
     } catch (err) {
         console.error('Falha na inicialização do modulo principal:', err);
     }
