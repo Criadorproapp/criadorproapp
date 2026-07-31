@@ -4406,7 +4406,49 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         alert('✓ Modo Suporte encerrado. Você retornou ao Painel Master Admin.');
     };
 
-    document.getElementById('master-search-cliente')?.addEventListener('input', renderMasterAdminPanel);
+    window.switchAuthTab = (signupMode) => {
+        isSignupMode = signupMode;
+        const loginErrorEl = document.getElementById('loginError');
+        if (loginErrorEl) loginErrorEl.style.display = 'none';
+
+        const loginTab = document.getElementById('tab-login');
+        const signupTab = document.getElementById('tab-signup');
+        const loginFields = document.getElementById('form-login-fields');
+        const signupFields = document.getElementById('form-signup-fields');
+        const btnDoLogin = document.getElementById('btn-do-login');
+
+        if (loginTab) {
+            loginTab.style.background = signupMode ? 'transparent' : '#0ea5e9';
+            loginTab.style.color = signupMode ? '#94a3b8' : '#fff';
+        }
+        if (signupTab) {
+            signupTab.style.background = signupMode ? '#0ea5e9' : 'transparent';
+            signupTab.style.color = signupMode ? '#fff' : '#94a3b8';
+        }
+
+        if (loginFields) loginFields.style.display = signupMode ? 'none' : 'block';
+        if (signupFields) signupFields.style.display = signupMode ? 'block' : 'none';
+
+        if (btnDoLogin) btnDoLogin.innerText = signupMode ? 'Criar Conta de Criador' : 'Acessar Sistema';
+    };
+
+    window.handleLoginSubmit = () => {
+        handleLogin();
+    };
+
+    window.fillMasterAdminLogin = (e) => {
+        if (e) e.preventDefault();
+        window.switchAuthTab(false);
+        const emailInput = document.getElementById('login-email');
+        const passInput = document.getElementById('login-password');
+        if (emailInput) emailInput.value = 'admin@admin.com';
+        if (passInput) passInput.value = '123456';
+        alert('🛡️ DADOS DE ADMINISTRADOR MASTER PREENCHIDOS!\n\nE-mail: admin@admin.com\nSenha: 123456\n\nClique em "Acessar Sistema" para entrar no Painel Master.');
+    };
+
+    if (window.location.hash === '#admin') {
+        setTimeout(() => window.fillMasterAdminLogin(), 300);
+    }
 
     const finishLogin = async (session) => {
         DB.session = session || null;
