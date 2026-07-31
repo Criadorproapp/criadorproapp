@@ -448,15 +448,24 @@ function __initPainel() {
                 ]);
 
                 if (Array.isArray(avesResp.data) && avesResp.data.length) {
-                    this.aves = avesResp.data.map(normalizeAve);
+                    const cloudAves = avesResp.data.map(normalizeAve);
+                    const cloudIds = new Set(cloudAves.map(a => a.id));
+                    const localOnly = this.aves.filter(a => !cloudIds.has(a.id));
+                    this.aves = [...cloudAves, ...localOnly];
                     this.saveAves();
                 }
                 if (Array.isArray(recintosResp.data) && recintosResp.data.length) {
-                    this.recintos = recintosResp.data.map(normalizeRecinto);
+                    const cloudRec = recintosResp.data.map(normalizeRecinto);
+                    const cloudIds = new Set(cloudRec.map(r => r.id));
+                    const localOnly = this.recintos.filter(r => !cloudIds.has(r.id));
+                    this.recintos = [...cloudRec, ...localOnly];
                     this.saveRecintos();
                 }
                 if (Array.isArray(financasResp.data) && financasResp.data.length) {
-                    this.financas = financasResp.data.map(normalizeFinanca);
+                    const cloudFin = financasResp.data.map(normalizeFinanca);
+                    const cloudIds = new Set(cloudFin.map(f => f.id));
+                    const localOnly = this.financas.filter(f => !cloudIds.has(f.id));
+                    this.financas = [...cloudFin, ...localOnly];
                     this.saveFinancas();
                 }
                 if (perfilResp.data) {
@@ -4432,10 +4441,58 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
 
     document.getElementById('btn-add-ave')?.addEventListener('click', () => { if (typeof openModal === 'function') openModal('modal-add-ave'); else document.getElementById('modal-add-ave').style.display = 'flex'; });
     document.getElementById('btn-cancel-ave')?.addEventListener('click', () => { if (typeof closeModal === 'function') closeModal('modal-add-ave'); else document.getElementById('modal-add-ave').style.display = 'none'; });
+        window.populateModalSelectsAndDates = (modalId) => {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+
+        const today = new Date().toISOString().split('T')[0];
+        modal.querySelectorAll('input[type="date"]').forEach(input => {
+            if (!input.value) input.value = today;
+        });
+
+        const recSelects = [
+            'add-recinto-select', 'ovo-recinto-select', 'quar-recinto-select', 
+            'enf-recinto-select', 'cardapio-recinto-select', 'escala-recinto-select'
+        ];
+        recSelects.forEach(id => {
+            const sel = document.getElementById(id);
+            if (sel) {
+                const currentVal = sel.value;
+                sel.innerHTML = '<option value="">— Sem recinto / Geral —</option>' + 
+                    (DB.recintos || []).map(r => `<option value="${escapeHtml(r.id)}">${escapeHtml(r.nome)} (${escapeHtml(r.ala || 'Ala')})</option>`).join('');
+                if (currentVal) sel.value = currentVal;
+            }
+        });
+
+        const pesoFilhoteSel = document.getElementById('peso-filhote-select');
+        if (pesoFilhoteSel) {
+            const currentVal = pesoFilhoteSel.value;
+            pesoFilhoteSel.innerHTML = (DB.uti_filhotes || []).map(f => 
+                `<option value="${escapeHtml(f.id)}">[${escapeHtml(f.anilha)}] ${escapeHtml(f.especie)} - Nasc: ${escapeHtml(f.nascimento || '—')}</option>`
+            ).join('') || '<option value="">Nenhum filhote na UTI</option>';
+            if (currentVal) pesoFilhoteSel.value = currentVal;
+        }
+
+        const nfeAnimalSel = document.getElementById('nfe-animal-select');
+        if (nfeAnimalSel) {
+            const currentVal = nfeAnimalSel.value;
+            nfeAnimalSel.innerHTML = '<option value="">— Selecionar Animal do Plantel —</option>' +
+                (DB.aves || []).map(a => 
+                    `<option value="${escapeHtml(a.anilha)}" data-especie="${escapeHtml(a.especie)}">[${escapeHtml(a.anilha)}] ${escapeHtml(a.especie)} - ${escapeHtml(a.mutacao)}</option>`
+                ).join('');
+            if (currentVal) nfeAnimalSel.value = currentVal;
+        }
+
+        if (window.populateRecintoPairSelects) {
+            window.populateRecintoPairSelects();
+        }
+    };
+
     window.handleSaveAve = async () => {
-        const anilha = document.getElementById('add-anilha')?.value.trim();
-        const mutacao = document.getElementById('add-mutacao')?.value.trim();
-        if (!anilha || !mutacao) return alert('Preencha ao menos a anilha e a mutação da ave.');
+        let anilha = document.getElementById('add-anilha')?.value.trim();
+        let mutacao = document.getElementById('add-mutacao')?.value.trim();
+        if (!anilha) anilha = `RN-${Date.now().toString().slice(-4)}`;
+        if (!mutacao) mutacao = 'Ancestral / Padrão';
         const pai_anilha = document.getElementById('add-pai-anilha')?.value.trim() || '';
         const mae_anilha = document.getElementById('add-mae-anilha')?.value.trim() || '';
         const foto_url = document.getElementById('add-foto-url')?.value.trim() || '';
@@ -4446,7 +4503,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
             especie: document.getElementById('add-especie')?.value || 'Ringneck',
             sexo: document.getElementById('add-sexo')?.value || 'Macho',
             categoria: 'Plantel',
-            nascimento: document.getElementById('add-nascimento')?.value || '',
+            nascimento: document.getElementById('add-nascimento')?.value || new Date().toISOString().split('T')[0],
             recinto: document.getElementById('add-recinto-select')?.value || '',
             pai_anilha,
             mae_anilha,
@@ -4582,8 +4639,8 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
     });
     document.getElementById('btn-cancel-recinto')?.addEventListener('click', () => { document.getElementById('modal-add-recinto').style.display = 'none'; });
     window.handleSaveRecinto = async () => {
-        const nome = document.getElementById('rec-nome')?.value.trim();
-        if (!nome) return alert('Informe o nome do recinto / setor.');
+        let nome = document.getElementById('rec-nome')?.value.trim();
+        if (!nome) nome = `Recinto ${DB.recintos.length + 1}`;
         const ala = document.getElementById('rec-ala')?.value || 'Ala de Matrizes';
         const tipo_comp = document.getElementById('rec-tipo-comp')?.value || 'Gaiola Convencional';
         const qtd_comp = document.getElementById('rec-qtd-comp')?.value || '1';
@@ -4623,10 +4680,11 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
     document.getElementById('btn-save-recinto')?.addEventListener('click', window.handleSaveRecinto);
 
     window.handleSaveOvo = async () => {
-        const codigo = document.getElementById('ovo-codigo')?.value.trim();
-        const recinto_id = document.getElementById('ovo-recinto-select')?.value;
-        const data_incubacao = document.getElementById('ovo-data-incubacao')?.value;
-        if (!codigo || !data_incubacao) return alert('Informe ao menos o código do ovo e a data de incubação.');
+        let codigo = document.getElementById('ovo-codigo')?.value.trim();
+        let data_incubacao = document.getElementById('ovo-data-incubacao')?.value;
+        if (!codigo) codigo = `OVO-${Date.now().toString().slice(-4)}`;
+        if (!data_incubacao) data_incubacao = new Date().toISOString().split('T')[0];
+        const recinto_id = document.getElementById('ovo-recinto-select')?.value || '';
 
         await DB.addOvo({
             codigo,
@@ -4647,9 +4705,10 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
     document.getElementById('btn-save-ovo')?.addEventListener('click', window.handleSaveOvo);
 
     window.handleSaveFilhoteUti = async () => {
-        const anilha = document.getElementById('uti-anilha')?.value.trim();
-        const nascimento = document.getElementById('uti-nascimento')?.value;
-        if (!anilha || !nascimento) return alert('Informe a anilha e data de nascimento do filhote.');
+        let anilha = document.getElementById('uti-anilha')?.value.trim();
+        let nascimento = document.getElementById('uti-nascimento')?.value;
+        if (!anilha) anilha = `UTI-${Date.now().toString().slice(-4)}`;
+        if (!nascimento) nascimento = new Date().toISOString().split('T')[0];
 
         await DB.addFilhoteUti({
             anilha,
@@ -4694,11 +4753,12 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
     document.getElementById('btn-export-maternidade-csv')?.addEventListener('click', exportMaternidadeCsv);
 
     window.handleSaveInsumo = async () => {
-        const nome = document.getElementById('insumo-nome')?.value.trim();
-        const categoria = document.getElementById('insumo-categoria')?.value;
-        const qtd = parseFloat(document.getElementById('insumo-qtd')?.value);
+        let nome = document.getElementById('insumo-nome')?.value.trim();
+        let qtd = parseFloat(document.getElementById('insumo-qtd')?.value);
+        if (!nome) nome = 'Alimento / Insumo';
+        if (Number.isNaN(qtd) || qtd <= 0) qtd = 1;
+        const categoria = document.getElementById('insumo-categoria')?.value || 'Extrusada';
         const minimo = parseFloat(document.getElementById('insumo-minimo')?.value);
-        if (!nome || Number.isNaN(qtd)) return alert('Informe o nome do alimento e a quantidade.');
 
         await DB.addInsumo({
             nome,
@@ -4719,10 +4779,11 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
     document.getElementById('btn-save-insumo')?.addEventListener('click', window.handleSaveInsumo);
 
     window.handleSaveCardapio = async () => {
-        const nome = document.getElementById('cardapio-nome')?.value.trim();
-        const recinto_id = document.getElementById('cardapio-recinto-select')?.value;
-        const ingredientes = document.getElementById('cardapio-ingredientes')?.value.trim();
-        if (!nome || !ingredientes) return alert('Informe o nome e os ingredientes do cardápio.');
+        let nome = document.getElementById('cardapio-nome')?.value.trim();
+        let ingredientes = document.getElementById('cardapio-ingredientes')?.value.trim();
+        if (!nome) nome = 'Cardápio Nutricional';
+        if (!ingredientes) ingredientes = 'Extrusada + Farinhada de Proteína';
+        const recinto_id = document.getElementById('cardapio-recinto-select')?.value || '';
 
         await DB.addCardapio({
             nome,
@@ -4768,11 +4829,13 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
     document.getElementById('btn-export-cozinha-csv')?.addEventListener('click', exportCozinhaCsv);
 
     window.handleSaveQuarentena = async () => {
-        const anilha = document.getElementById('quar-anilha')?.value.trim();
-        const origem = document.getElementById('quar-origem')?.value.trim();
-        const data_chegada = document.getElementById('quar-data-chegada')?.value;
-        const data_alta = document.getElementById('quar-data-alta')?.value;
-        if (!anilha || !origem || !data_chegada) return alert('Informe ao menos a anilha, origem e data de chegada.');
+        let anilha = document.getElementById('quar-anilha')?.value.trim();
+        let origem = document.getElementById('quar-origem')?.value.trim();
+        let data_chegada = document.getElementById('quar-data-chegada')?.value;
+        let data_alta = document.getElementById('quar-data-alta')?.value;
+        if (!anilha) anilha = `QUA-${Date.now().toString().slice(-4)}`;
+        if (!origem) origem = 'Criatório Externo';
+        if (!data_chegada) data_chegada = new Date().toISOString().split('T')[0];
 
         await DB.addQuarentena({
             anilha,
@@ -4799,10 +4862,12 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
     document.getElementById('btn-save-quarentena')?.addEventListener('click', window.handleSaveQuarentena);
 
     window.handleSaveEnfermaria = async () => {
-        const anilha = document.getElementById('enf-anilha')?.value.trim();
-        const diagnostico = document.getElementById('enf-diagnostico')?.value.trim();
-        const medicamento = document.getElementById('enf-medicamento')?.value.trim();
-        if (!anilha || !diagnostico || !medicamento) return alert('Informe a anilha, diagnóstico e o medicamento.');
+        let anilha = document.getElementById('enf-anilha')?.value.trim();
+        let diagnostico = document.getElementById('enf-diagnostico')?.value.trim();
+        let medicamento = document.getElementById('enf-medicamento')?.value.trim();
+        if (!anilha) anilha = `ENF-${Date.now().toString().slice(-4)}`;
+        if (!diagnostico) diagnostico = 'Suspeita clínica de rotina';
+        if (!medicamento) medicamento = 'Vitamina / Suplementação';
 
         await DB.addEnfermaria({
             anilha,
@@ -4827,10 +4892,12 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
     document.getElementById('btn-save-enfermaria')?.addEventListener('click', window.handleSaveEnfermaria);
 
     window.handleSaveSaida = async () => {
-        const anilha = document.getElementById('saida-anilha')?.value.trim();
-        const destino = document.getElementById('saida-destino')?.value.trim();
-        const data_transporte = document.getElementById('saida-data-transporte')?.value;
-        if (!anilha || !destino || !data_transporte) return alert('Informe a anilha, destino e data de transporte.');
+        let anilha = document.getElementById('saida-anilha')?.value.trim();
+        let destino = document.getElementById('saida-destino')?.value.trim();
+        let data_transporte = document.getElementById('saida-data-transporte')?.value;
+        if (!anilha) anilha = `SAI-${Date.now().toString().slice(-4)}`;
+        if (!destino) destino = 'Comprador Final';
+        if (!data_transporte) data_transporte = new Date().toISOString().split('T')[0];
 
         await DB.addSaida({
             anilha,
@@ -5060,11 +5127,12 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
     document.getElementById('btn-cancel-financa')?.addEventListener('click', () => { document.getElementById('modal-add-financa').style.display = 'none'; });
 
     window.handleSaveFinanca = async () => {
-        const descricao = document.getElementById('fin-desc')?.value.trim();
-        const valor = parseFloat(document.getElementById('fin-valor')?.value);
-        const tipo = document.getElementById('fin-tipo')?.value;
-        const data = document.getElementById('fin-data')?.value;
-        if (!descricao || Number.isNaN(valor) || valor <= 0) return alert('Preencha descrição e valor válido.');
+        let descricao = document.getElementById('fin-desc')?.value.trim();
+        let valor = parseFloat(document.getElementById('fin-valor')?.value);
+        if (!descricao) descricao = 'Lançamento Financeiro';
+        if (Number.isNaN(valor) || valor <= 0) valor = 100;
+        const tipo = document.getElementById('fin-tipo')?.value || 'entrada';
+        const data = document.getElementById('fin-data')?.value || new Date().toISOString().split('T')[0];
         await DB.addFinanca({ tipo, descricao, valor, data });
         if (document.getElementById('fin-desc')) document.getElementById('fin-desc').value = '';
         if (document.getElementById('fin-valor')) document.getElementById('fin-valor').value = '';

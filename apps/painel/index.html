@@ -1780,8 +1780,8 @@
         if (modal) {
             modal.classList.add('open');
             modal.style.display = 'flex';
-            if (modalId === 'modal-add-recinto' && window.populateRecintoPairSelects) {
-                window.populateRecintoPairSelects();
+            if (window.populateModalSelectsAndDates) {
+                window.populateModalSelectsAndDates(modalId);
             }
         }
     }
