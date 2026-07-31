@@ -21,10 +21,12 @@ function start(name, args, env = {}) {
 }
 
 start('api', ['apps/api/server.js'], { PORT: process.env.PORT || '4173' });
-start('painel', ['scripts/serve-painel.js'], { PAINEL_PORT: process.env.PAINEL_PORT || '4180' });
+start('painel_jarvis', ['apps/jarvis-command/jarvis_server.js'], { PAINEL_PORT: process.env.PAINEL_PORT || '4180' });
+start('studio', ['scripts/start-studio.js']);
 
 console.log('API:    http://localhost:4173');
 console.log('Painel: http://localhost:4180/apps/painel/');
+console.log('Studio: http://localhost:5678');
 
 function shutdown() {
   for (const p of processes) {

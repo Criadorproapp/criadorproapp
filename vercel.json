@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "routes": [
+    { "src": "^/$", "dest": "/apps/painel/criadorpro.html" },
+    { "src": "^/manifest.json$", "dest": "/apps/painel/manifest.json" },
+    { "src": "^/sw.js$", "dest": "/apps/painel/sw.js" },
+    { "src": "^/style.css$", "dest": "/apps/painel/style.css" },
+    { "src": "^/script.js$", "dest": "/apps/painel/script.js" },
+    { "src": "^/logo_criador_pro.png$", "dest": "/apps/painel/logo_criador_pro.png" },
+    { "src": "/(.*)", "dest": "/apps/painel/$1" }
+  ]
+}

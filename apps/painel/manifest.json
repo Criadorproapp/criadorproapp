@@ -1,0 +1,23 @@
+{
+  "short_name": "CriadorPro",
+  "name": "Criador Pro — Gestão de Plantel & Criadouros",
+  "description": "Sistema completo de gestão de plantel, recintos, genético mendeliana, quarentena, nutrição, financeiro e emissão de NF-e.",
+  "icons": [
+    {
+      "src": "logo_criador_pro.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo_criador_pro.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "./criadorpro.html",
+  "background_color": "#0f172a",
+  "theme_color": "#0ea5e9",
+  "display": "standalone",
+  "orientation": "any",
+  "categories": ["business", "productivity", "utilities"]
+}

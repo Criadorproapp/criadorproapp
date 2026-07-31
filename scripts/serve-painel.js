@@ -36,8 +36,8 @@ function sendFile(filePath, res) {
 
 const server = http.createServer((req, res) => {
   const rawPath = decodeURIComponent((req.url || '/').split('?')[0] || '/');
-  if (rawPath === '/') {
-    res.writeHead(302, { Location: '/apps/painel/' });
+  if (rawPath === '/' || rawPath === '/login' || rawPath === '/app' || rawPath === '/sistema' || rawPath === '/criadorpro') {
+    res.writeHead(302, { Location: '/apps/painel/criadorpro.html' });
     res.end();
     return;
   }

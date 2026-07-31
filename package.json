@@ -2,9 +2,10 @@
   "name": "criador-pro-trabalho",
   "private": true,
   "scripts": {
-    "start": "node server.js",
+    "start": "node apps/jarvis-command/jarvis_server.js",
     "start:api": "node apps/api/server.js",
-    "start:painel": "node scripts/serve-painel.js",
+    "start:painel": "node apps/jarvis-command/jarvis_server.js",
+    "start:studio": "node scripts/start-studio.js",
     "start:all": "node scripts/start-all.js",
     "check": "node --check script.js",
     "preflight": "powershell -ExecutionPolicy Bypass -File ./scripts/preflight.ps1"
@@ -12,5 +13,8 @@
   "devDependencies": {
     "pdf-parse": "^2.4.5",
     "pdf2json": "^4.0.2"
+  },
+  "dependencies": {
+    "google-it": "^1.6.4"
   }
 }

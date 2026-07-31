@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+    <h1>Testing Errors</h1>
+    <script>
+        window.addEventListener("error", function (e) {
+            document.body.innerHTML += "<h1 style='color:red'>ERROR: " + e.message + "</h1><br/>Location: " + e.filename + ":" + e.lineno;
+        });
+        window.addEventListener("unhandledrejection", function (e) {
+            document.body.innerHTML += "<h1 style='color:red'>PROMISE ERROR: " + e.reason + "</h1>";
+        });
+    </script>
+    <script type="module" src="/apps/painel/script.js"></script>
+    <div id="login-overlay"></div>
+    <div id="btn-do-login"></div>
+</body>
+</html>

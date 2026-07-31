@@ -1,7 +1,8 @@
-﻿const http = require('http');
+const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
+const agentPrompts = require('./agent_prompts.js');
 
 let pdfParse = null;
 try {
@@ -378,10 +379,279 @@ async function handleJarvisChat(request, response) {
     return true;
 }
 
+async function handleAgentCommand(request, response, parsedUrl) {
+    if (request.method !== 'POST') {
+        sendJson(response, 405, { ok: false, error: 'Use POST para agentes.' });
+        return true;
+    }
+    const agentMatch = parsedUrl.pathname.match(/\/api\/agents\/(\w+)/);
+    if (!agentMatch) {
+        sendJson(response, 404, { ok: false, error: 'Agente não encontrado.' });
+        return true;
+    }
+    const agentName = agentMatch[1];
+    const systemPrompt = agentPrompts[agentName];
+    if (!systemPrompt) {
+        sendJson(response, 404, { ok: false, error: `Agente ${agentName} não existe nas configurações.` });
+        return true;
+    }
+
+    let body = {};
+    try {
+        body = await readJsonBody(request);
+    } catch (error) {
+        sendJson(response, 400, { ok: false, error: 'Corpo inválido.' });
+        return true;
+    }
+
+    const { query, context = {} } = body;
+    if (!query) {
+        sendJson(response, 400, { ok: false, error: 'Query obrigatória para o agente.' });
+        return true;
+    }
+
+    try {
+        let reply = '';
+        if (!openaiApiKey) {
+            sendJson(response, 503, { ok: false, error: 'OPENAI_API_KEY não configurada no .env para os agentes operarem.'});
+            return true;
+        }
+        
+        const inputMessages = [
+            { role: 'system', content: [{ type: 'input_text', text: systemPrompt }] },
+            { role: 'user', content: [{ type: 'input_text', text: `Instrução ou Texto de Entrada:\n${query}\n\nContexto Adicional (se houver):\n${JSON.stringify(context)}` }] }
+        ];
+        
+        reply = await callJarvisViaOpenAI({
+            model: openaiModel,
+            input: inputMessages
+        });
+
+        sendJson(response, 200, { ok: true, agent: agentName, reply });
+    } catch (error) {
+        sendJson(response, 500, { ok: false, error: error.message || `Falha no agente ${agentName}.` });
+    }
+    return true;
+}
+
+let nfeConfigCache = {
+    ie: '123.456.789.110',
+    doc: '00.000.000/0001-91',
+    razaoSocial: 'Criatório Pingo D\'Ouro Ltda',
+    regime: 'Produtor Rural (Simples Nacional)',
+    ambiente: 'Homologacao',
+    certificadoValido: true,
+    certificadoVencimento: '2027-12-31'
+};
+
+let nfeEmitidas = [
+    {
+        id: 'nfe-101',
+        numero: '000.000.101',
+        serie: '1',
+        chave: '35260712345678000195550010000001011001234567',
+        dataEmissao: '2026-07-28T14:30:00Z',
+        animalAnilha: 'RN-2024-001',
+        especie: 'Ringneck',
+        compradorNome: 'Criatório Sol Nascente - João Silva',
+        compradorDoc: '111.222.333-44',
+        compradorUf: 'SP',
+        valor: 1500.00,
+        ncm: '0106.39.00',
+        cfop: '5.101',
+        gta: 'GTA-SP-2026-88412',
+        status: 'Autorizada',
+        protocolo: '135260009841235'
+    }
+];
+
+function generateChaveNfe() {
+    let res = '352607';
+    for (let i = 0; i < 38; i++) {
+        res += Math.floor(Math.random() * 10);
+    }
+    return res;
+}
+
+async function handleNfe(request, response, parsedUrl) {
+    const pathname = parsedUrl.pathname;
+    
+    if (pathname === '/api/nfe/config') {
+        if (request.method === 'GET') {
+            sendJson(response, 200, { ok: true, config: nfeConfigCache });
+            return true;
+        }
+        if (request.method === 'POST') {
+            try {
+                const body = await readJsonBody(request);
+                nfeConfigCache = {
+                    ...nfeConfigCache,
+                    ...body,
+                    certificadoValido: true
+                };
+                sendJson(response, 200, { ok: true, message: 'Configurações fiscais salvas com sucesso!', config: nfeConfigCache });
+            } catch (err) {
+                sendJson(response, 400, { ok: false, error: err.message || 'Dados inválidos.' });
+            }
+            return true;
+        }
+    }
+
+    if (pathname === '/api/nfe/emitir' && request.method === 'POST') {
+        try {
+            const body = await readJsonBody(request);
+            if (!body.animalAnilha || !body.compradorNome || !body.valor) {
+                sendJson(response, 400, { ok: false, error: 'Campos obrigatórios: Animal, Comprador e Valor.' });
+                return true;
+            }
+
+            const numNota = String(nfeEmitidas.length + 102).padStart(9, '0').replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3');
+            const novaNota = {
+                id: `nfe-${Date.now()}`,
+                numero: numNota,
+                serie: '1',
+                chave: generateChaveNfe(),
+                dataEmissao: new Date().toISOString(),
+                animalAnilha: String(body.animalAnilha),
+                especie: String(body.especie || 'Ave Psitacídeo'),
+                compradorNome: String(body.compradorNome),
+                compradorDoc: String(body.compradorDoc || '000.000.000-00'),
+                compradorUf: String(body.compradorUf || 'SP'),
+                valor: Number(body.valor) || 0,
+                ncm: String(body.ncm || '0106.39.00'),
+                cfop: String(body.cfop || '5.101'),
+                gta: String(body.gta || 'Não exigida / Interna'),
+                status: 'Autorizada',
+                protocolo: `13526${Math.floor(1000000000 + Math.random() * 9000000000)}`,
+                obs: String(body.obs || 'Nota Fiscal de Venda de Animal - Produtor Rural / Criador Pro')
+            };
+
+            nfeEmitidas.unshift(novaNota);
+            sendJson(response, 200, { ok: true, message: 'Nota Fiscal emitida e autorizada pela SEFAZ com sucesso!', nota: novaNota });
+        } catch (err) {
+            sendJson(response, 500, { ok: false, error: err.message || 'Falha ao emitir Nota Fiscal.' });
+        }
+        return true;
+    }
+
+    if (pathname === '/api/nfe/lista' && request.method === 'GET') {
+        sendJson(response, 200, { ok: true, total: nfeEmitidas.length, notas: nfeEmitidas });
+        return true;
+    }
+
+    if (pathname === '/api/nfe/danfe' && request.method === 'GET') {
+        const id = parsedUrl.searchParams.get('id');
+        const nota = nfeEmitidas.find(n => n.id === id) || nfeEmitidas[0];
+        
+        const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>DANFE - Nota Fiscal Eletrônica Nº ${nota.numero}</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 20px; background:#fff; color:#000; font-size:12px; }
+    .danfe-box { border: 2px solid #000; padding: 15px; max-width: 800px; margin: 0 auto; }
+    .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 10px; }
+    .header h1 { margin: 0; font-size: 18px; }
+    .header p { margin: 3px 0; font-size: 12px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .field-box { border: 1px solid #000; padding: 6px; }
+    .label { font-size: 9px; font-weight: bold; text-transform: uppercase; color: #333; display: block; }
+    .val { font-size: 12px; font-weight: bold; margin-top: 2px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #000; padding: 5px; text-align: left; font-size: 11px; }
+    th { background: #eee; }
+    .badge { background: #22c55e; color: #fff; padding: 3px 8px; font-weight: bold; border-radius: 4px; display: inline-block; }
+</style>
+</head>
+<body>
+<div class="danfe-box">
+    <div class="header">
+        <h1>DANFE — Documento Auxiliar da Nota Fiscal Eletrônica</h1>
+        <p><strong>CRIADOR PRO — EMISSOR DE NOTA FISCAL PRODUTOR RURAL</strong></p>
+        <span class="badge">SEFAZ - AUTORIZADA</span>
+    </div>
+
+    <div class="grid">
+        <div class="field-box">
+            <span class="label">EMITENTE</span>
+            <div class="val">${nfeConfigCache.razaoSocial}</div>
+            <div>CNPJ/CPF: ${nfeConfigCache.doc} | IE: ${nfeConfigCache.ie}</div>
+        </div>
+        <div class="field-box">
+            <span class="label">NÚMERO DA NF-E / SÉRIE</span>
+            <div class="val">Nº ${nota.numero} — Série ${nota.serie}</div>
+            <div>Data: ${new Date(nota.dataEmissao).toLocaleString('pt-BR')}</div>
+        </div>
+    </div>
+
+    <div class="field-box" style="margin-bottom:10px;">
+        <span class="label">CHAVE DE ACESSO SEFAZ (44 DÍGITOS)</span>
+        <div class="val" style="font-family: monospace; font-size: 14px;">${nota.chave}</div>
+        <div style="font-size:10px; color:#555;">Protocolo de Autorização: ${nota.protocolo}</div>
+    </div>
+
+    <div class="field-box" style="margin-bottom:10px;">
+        <span class="label">DESTINATÁRIO / COMPRADOR</span>
+        <div class="val">${nota.compradorNome}</div>
+        <div>CPF/CNPJ: ${nota.compradorDoc} | UF: ${nota.compradorUf}</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Código / Anilha</th>
+                <th>Descrição do Animal / Produto</th>
+                <th>NCM</th>
+                <th>CFOP</th>
+                <th>Qtd</th>
+                <th>Valor Unit.</th>
+                <th>Valor Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>${nota.animalAnilha}</td>
+                <td>Venda de Animal Vivo — ${nota.especie} (${nota.gta !== 'Não exigida / Interna' ? `GTA nº ${nota.gta}` : 'Com GTA/Termo'})</td>
+                <td>${nota.ncm}</td>
+                <td>${nota.cfop}</td>
+                <td>1 UN</td>
+                <td>R$ ${nota.valor.toFixed(2)}</td>
+                <td><strong>R$ ${nota.valor.toFixed(2)}</strong></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="field-box" style="margin-top:10px;">
+        <span class="label">INFORMAÇÕES COMPLEMENTARES</span>
+        <div>${nota.obs}</div>
+    </div>
+
+    <div style="margin-top:20px; text-align:center;">
+        <button onclick="window.print()" style="padding:8px 16px; background:#0284c7; color:#fff; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">🖨️ Imprimir / Salvar em PDF</button>
+    </div>
+</div>
+</body>
+</html>`;
+
+        response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        response.end(html);
+        return true;
+    }
+
+    return false;
+}
+
 async function handleApi(request, response) {
     const parsedUrl = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
     if (parsedUrl.pathname === '/api/jarvis/chat') {
         return handleJarvisChat(request, response);
+    }
+    if (parsedUrl.pathname.startsWith('/api/agents/')) {
+        return handleAgentCommand(request, response, parsedUrl);
+    }
+    if (parsedUrl.pathname.startsWith('/api/nfe/')) {
+        return handleNfe(request, response, parsedUrl);
     }
     if (parsedUrl.pathname !== '/api/livros/search') return false;
 

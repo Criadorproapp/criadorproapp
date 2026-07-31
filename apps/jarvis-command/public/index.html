@@ -71,9 +71,9 @@
                 <!-- HEXAGON OVERLAY -->
                 <div class="hex-grid"></div>
                 <video id="camera-feed" autoplay muted playsinline title="VISÃO JARVIS" style="opacity:0;"></video>
-                <!-- LOGO ESTRITAMENTE DENTRO DO CÍRCULO MENOR -->
-                <img id="hud-logo" src="logo_criador_pro.png" class="hud-center-logo" alt="Criador Pro Logo">
             </div>
+            <!-- LOGO COM PRIORIDADE ABSOLUTA -->
+            <img id="hud-logo" src="logo_criador_pro.png" class="hud-center-logo" alt="Criador Pro Logo">
 
             <!-- BIOMETRIC DATA HUD -->
             <div class="biometric-hud">
@@ -91,20 +91,10 @@
                 <div class="tab-controls">
                     <button onclick="toggleView('tree')">TREE</button>
                     <button onclick="toggleView('graph')">BRAIN</button>
-                    <button onclick="toggleView('tasks')" style="border-color: var(--accent); color: var(--accent);">TASKS</button>
                 </div>
             </div>
             <div id="file-tree" class="file-tree scroll-stark"></div>
             <div id="graph-view" class="file-tree" style="display:none;"></div>
-            
-            <div id="tasks-view" class="file-tree scroll-stark" style="display:none; padding: 10px;">
-                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
-                    <input type="text" id="task-titulo" placeholder="Nova tarefa..." style="background: transparent; border: 1px solid var(--accent); color: #fff; padding: 8px;">
-                    <input type="datetime-local" id="task-dataHora" style="background: transparent; border: 1px solid var(--accent); color: #fff; padding: 8px;">
-                    <button onclick="adicionarTarefa()" style="background: var(--accent); color: #000; border: none; padding: 8px; cursor: pointer; font-weight: bold;">ADICIONAR</button>
-                </div>
-                <ul id="task-list" style="list-style: none; padding: 0; margin: 0; font-size: 0.85em;"></ul>
-            </div>
         </aside>
 
         <!-- RIGHT PANEL: PRODUCTION AGENTS -->
