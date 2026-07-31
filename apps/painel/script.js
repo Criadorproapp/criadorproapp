@@ -4623,10 +4623,10 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
 
     document.getElementById('btn-save-recinto')?.addEventListener('click', window.handleSaveRecinto);
 
-    document.getElementById('btn-save-ovo')?.addEventListener('click', async () => {
-        const codigo = document.getElementById('ovo-codigo').value.trim();
-        const recinto_id = document.getElementById('ovo-recinto-select').value;
-        const data_incubacao = document.getElementById('ovo-data-incubacao').value;
+    window.handleSaveOvo = async () => {
+        const codigo = document.getElementById('ovo-codigo')?.value.trim();
+        const recinto_id = document.getElementById('ovo-recinto-select')?.value;
+        const data_incubacao = document.getElementById('ovo-data-incubacao')?.value;
         if (!codigo || !data_incubacao) return alert('Informe ao menos o código do ovo e a data de incubação.');
 
         await DB.addOvo({
@@ -4639,14 +4639,17 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
             status: 'Em Incubação'
         });
 
-        document.getElementById('ovo-codigo').value = '';
+        if (document.getElementById('ovo-codigo')) document.getElementById('ovo-codigo').value = '';
         if (window.closeModal) window.closeModal('modal-add-ovo');
+        else if (document.getElementById('modal-add-ovo')) document.getElementById('modal-add-ovo').style.display = 'none';
         renderOvos();
-    });
+        alert('🎉 Ovo cadastrado na chocadeira com sucesso!');
+    };
+    document.getElementById('btn-save-ovo')?.addEventListener('click', window.handleSaveOvo);
 
-    document.getElementById('btn-save-filhote-uti')?.addEventListener('click', async () => {
-        const anilha = document.getElementById('uti-anilha').value.trim();
-        const nascimento = document.getElementById('uti-nascimento').value;
+    window.handleSaveFilhoteUti = async () => {
+        const anilha = document.getElementById('uti-anilha')?.value.trim();
+        const nascimento = document.getElementById('uti-nascimento')?.value;
         if (!anilha || !nascimento) return alert('Informe a anilha e data de nascimento do filhote.');
 
         await DB.addFilhoteUti({
@@ -4659,14 +4662,17 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
             status: 'Em Tratagem'
         });
 
-        document.getElementById('uti-anilha').value = '';
+        if (document.getElementById('uti-anilha')) document.getElementById('uti-anilha').value = '';
         if (window.closeModal) window.closeModal('modal-add-filhote-uti');
+        else if (document.getElementById('modal-add-filhote-uti')) document.getElementById('modal-add-filhote-uti').style.display = 'none';
         renderUtiFilhotes();
-    });
+        alert('🎉 Filhote registrado na UTI Neonatal!');
+    };
+    document.getElementById('btn-save-filhote-uti')?.addEventListener('click', window.handleSaveFilhoteUti);
 
-    document.getElementById('btn-save-peso-filhote')?.addEventListener('click', async () => {
-        const filhoteId = document.getElementById('peso-filhote-select').value;
-        const valor = parseFloat(document.getElementById('peso-valor').value);
+    window.handleSavePesoFilhote = async () => {
+        const filhoteId = document.getElementById('peso-filhote-select')?.value;
+        const valor = parseFloat(document.getElementById('peso-valor')?.value);
         if (!filhoteId || Number.isNaN(valor)) return alert('Selecione o filhote e informe o peso em gramas.');
 
         await DB.addPesoFilhote(filhoteId, {
@@ -4676,20 +4682,23 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
             obs: document.getElementById('peso-obs')?.value.trim() || ''
         });
 
-        document.getElementById('peso-valor').value = '';
-        document.getElementById('peso-obs').value = '';
+        if (document.getElementById('peso-valor')) document.getElementById('peso-valor').value = '';
+        if (document.getElementById('peso-obs')) document.getElementById('peso-obs').value = '';
         if (window.closeModal) window.closeModal('modal-add-peso-filhote');
+        else if (document.getElementById('modal-add-peso-filhote')) document.getElementById('modal-add-peso-filhote').style.display = 'none';
         renderUtiFilhotes();
-    });
+        alert('🎉 Pesagem do filhote salva!');
+    };
+    document.getElementById('btn-save-peso-filhote')?.addEventListener('click', window.handleSavePesoFilhote);
 
     document.getElementById('btn-export-maternidade-pdf')?.addEventListener('click', exportMaternidadePdf);
     document.getElementById('btn-export-maternidade-csv')?.addEventListener('click', exportMaternidadeCsv);
 
-    document.getElementById('btn-save-insumo')?.addEventListener('click', async () => {
-        const nome = document.getElementById('insumo-nome').value.trim();
-        const categoria = document.getElementById('insumo-categoria').value;
-        const qtd = parseFloat(document.getElementById('insumo-qtd').value);
-        const minimo = parseFloat(document.getElementById('insumo-minimo').value);
+    window.handleSaveInsumo = async () => {
+        const nome = document.getElementById('insumo-nome')?.value.trim();
+        const categoria = document.getElementById('insumo-categoria')?.value;
+        const qtd = parseFloat(document.getElementById('insumo-qtd')?.value);
+        const minimo = parseFloat(document.getElementById('insumo-minimo')?.value);
         if (!nome || Number.isNaN(qtd)) return alert('Informe o nome do alimento e a quantidade.');
 
         await DB.addInsumo({
@@ -4701,16 +4710,19 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
             validade: document.getElementById('insumo-validade')?.value || ''
         });
 
-        document.getElementById('insumo-nome').value = '';
-        document.getElementById('insumo-qtd').value = '';
+        if (document.getElementById('insumo-nome')) document.getElementById('insumo-nome').value = '';
+        if (document.getElementById('insumo-qtd')) document.getElementById('insumo-qtd').value = '';
         if (window.closeModal) window.closeModal('modal-add-insumo');
+        else if (document.getElementById('modal-add-insumo')) document.getElementById('modal-add-insumo').style.display = 'none';
         renderEstoqueAlimentos();
-    });
+        alert('🎉 Insumo salvo no estoque!');
+    };
+    document.getElementById('btn-save-insumo')?.addEventListener('click', window.handleSaveInsumo);
 
-    document.getElementById('btn-save-cardapio')?.addEventListener('click', async () => {
-        const nome = document.getElementById('cardapio-nome').value.trim();
-        const recinto_id = document.getElementById('cardapio-recinto-select').value;
-        const ingredientes = document.getElementById('cardapio-ingredientes').value.trim();
+    window.handleSaveCardapio = async () => {
+        const nome = document.getElementById('cardapio-nome')?.value.trim();
+        const recinto_id = document.getElementById('cardapio-recinto-select')?.value;
+        const ingredientes = document.getElementById('cardapio-ingredientes')?.value.trim();
         if (!nome || !ingredientes) return alert('Informe o nome e os ingredientes do cardápio.');
 
         await DB.addCardapio({
@@ -4721,17 +4733,20 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
             horario: document.getElementById('cardapio-horario')?.value.trim() || '07:30 e 15:00'
         });
 
-        document.getElementById('cardapio-nome').value = '';
-        document.getElementById('cardapio-ingredientes').value = '';
+        if (document.getElementById('cardapio-nome')) document.getElementById('cardapio-nome').value = '';
+        if (document.getElementById('cardapio-ingredientes')) document.getElementById('cardapio-ingredientes').value = '';
         if (window.closeModal) window.closeModal('modal-add-cardapio');
+        else if (document.getElementById('modal-add-cardapio')) document.getElementById('modal-add-cardapio').style.display = 'none';
         renderCardapios();
-    });
+        alert('🎉 Cardápio salvo!');
+    };
+    document.getElementById('btn-save-cardapio')?.addEventListener('click', window.handleSaveCardapio);
 
-    document.getElementById('btn-save-escala-manejo')?.addEventListener('click', async () => {
-        const recinto_id = document.getElementById('escala-recinto-select').value;
-        const turno = document.getElementById('escala-turno').value;
-        const tratador = document.getElementById('escala-tratador').value.trim();
-        const limpador = document.getElementById('escala-limpador').value.trim();
+    window.handleSaveEscalaManejo = async () => {
+        const recinto_id = document.getElementById('escala-recinto-select')?.value;
+        const turno = document.getElementById('escala-turno')?.value;
+        const tratador = document.getElementById('escala-tratador')?.value.trim();
+        const limpador = document.getElementById('escala-limpador')?.value.trim();
         if (!tratador && !limpador) return alert('Informe ao menos o tratador ou o responsável pela limpeza.');
 
         await DB.addEscalaManejo({
@@ -4741,27 +4756,30 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
             limpador: limpador || 'Não informado'
         });
 
-        document.getElementById('escala-tratador').value = '';
-        document.getElementById('escala-limpador').value = '';
+        if (document.getElementById('escala-tratador')) document.getElementById('escala-tratador').value = '';
+        if (document.getElementById('escala-limpador')) document.getElementById('escala-limpador').value = '';
         if (window.closeModal) window.closeModal('modal-add-escala-manejo');
+        else if (document.getElementById('modal-add-escala-manejo')) document.getElementById('modal-add-escala-manejo').style.display = 'none';
         renderEscalaManejo();
-    });
+        alert('🎉 Escala de manejo salva!');
+    };
+    document.getElementById('btn-save-escala-manejo')?.addEventListener('click', window.handleSaveEscalaManejo);
 
     document.getElementById('btn-export-cozinha-pdf')?.addEventListener('click', exportCozinhaPdf);
     document.getElementById('btn-export-cozinha-csv')?.addEventListener('click', exportCozinhaCsv);
 
-    document.getElementById('btn-save-quarentena')?.addEventListener('click', async () => {
-        const anilha = document.getElementById('quar-anilha').value.trim();
-        const origem = document.getElementById('quar-origem').value.trim();
-        const data_chegada = document.getElementById('quar-data-chegada').value;
-        const data_alta = document.getElementById('quar-data-alta').value;
+    window.handleSaveQuarentena = async () => {
+        const anilha = document.getElementById('quar-anilha')?.value.trim();
+        const origem = document.getElementById('quar-origem')?.value.trim();
+        const data_chegada = document.getElementById('quar-data-chegada')?.value;
+        const data_alta = document.getElementById('quar-data-alta')?.value;
         if (!anilha || !origem || !data_chegada) return alert('Informe ao menos a anilha, origem e data de chegada.');
 
         await DB.addQuarentena({
             anilha,
             especie_mutacao: document.getElementById('quar-especie-mutacao')?.value.trim() || 'Ringneck',
             origem,
-            recinto_id: document.getElementById('quar-recinto-select').value,
+            recinto_id: document.getElementById('quar-recinto-select')?.value,
             gta: document.getElementById('quar-gta')?.value.trim() || 'N/A',
             nf: document.getElementById('quar-nf')?.value.trim() || 'N/A',
             data_chegada,
@@ -4771,22 +4789,25 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
             status: 'Em Quarentena'
         });
 
-        document.getElementById('quar-anilha').value = '';
-        document.getElementById('quar-origem').value = '';
-        document.getElementById('quar-doc-url').value = '';
+        if (document.getElementById('quar-anilha')) document.getElementById('quar-anilha').value = '';
+        if (document.getElementById('quar-origem')) document.getElementById('quar-origem').value = '';
+        if (document.getElementById('quar-doc-url')) document.getElementById('quar-doc-url').value = '';
         if (window.closeModal) window.closeModal('modal-add-quarentena');
+        else if (document.getElementById('modal-add-quarentena')) document.getElementById('modal-add-quarentena').style.display = 'none';
         renderQuarentena();
-    });
+        alert('🎉 Ave registrada na quarentena!');
+    };
+    document.getElementById('btn-save-quarentena')?.addEventListener('click', window.handleSaveQuarentena);
 
-    document.getElementById('btn-save-enfermaria')?.addEventListener('click', async () => {
-        const anilha = document.getElementById('enf-anilha').value.trim();
-        const diagnostico = document.getElementById('enf-diagnostico').value.trim();
-        const medicamento = document.getElementById('enf-medicamento').value.trim();
+    window.handleSaveEnfermaria = async () => {
+        const anilha = document.getElementById('enf-anilha')?.value.trim();
+        const diagnostico = document.getElementById('enf-diagnostico')?.value.trim();
+        const medicamento = document.getElementById('enf-medicamento')?.value.trim();
         if (!anilha || !diagnostico || !medicamento) return alert('Informe a anilha, diagnóstico e o medicamento.');
 
         await DB.addEnfermaria({
             anilha,
-            recinto_id: document.getElementById('enf-recinto-select').value,
+            recinto_id: document.getElementById('enf-recinto-select')?.value,
             diagnostico,
             medicamento,
             dosagem: document.getElementById('enf-dosagem')?.value.trim() || 'Conforme prescrição',
@@ -4796,17 +4817,20 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
             status: 'Em Tratamento'
         });
 
-        document.getElementById('enf-anilha').value = '';
-        document.getElementById('enf-diagnostico').value = '';
-        document.getElementById('enf-medicamento').value = '';
+        if (document.getElementById('enf-anilha')) document.getElementById('enf-anilha').value = '';
+        if (document.getElementById('enf-diagnostico')) document.getElementById('enf-diagnostico').value = '';
+        if (document.getElementById('enf-medicamento')) document.getElementById('enf-medicamento').value = '';
         if (window.closeModal) window.closeModal('modal-add-enfermaria');
+        else if (document.getElementById('modal-add-enfermaria')) document.getElementById('modal-add-enfermaria').style.display = 'none';
         renderEnfermaria();
-    });
+        alert('🎉 Internação registrada na enfermaria!');
+    };
+    document.getElementById('btn-save-enfermaria')?.addEventListener('click', window.handleSaveEnfermaria);
 
-    document.getElementById('btn-save-saida')?.addEventListener('click', async () => {
-        const anilha = document.getElementById('saida-anilha').value.trim();
-        const destino = document.getElementById('saida-destino').value.trim();
-        const data_transporte = document.getElementById('saida-data-transporte').value;
+    window.handleSaveSaida = async () => {
+        const anilha = document.getElementById('saida-anilha')?.value.trim();
+        const destino = document.getElementById('saida-destino')?.value.trim();
+        const data_transporte = document.getElementById('saida-data-transporte')?.value;
         if (!anilha || !destino || !data_transporte) return alert('Informe a anilha, destino e data de transporte.');
 
         await DB.addSaida({
@@ -4822,12 +4846,15 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
             status: 'Pronto para Envio'
         });
 
-        document.getElementById('saida-anilha').value = '';
-        document.getElementById('saida-destino').value = '';
-        document.getElementById('saida-foto-url').value = '';
+        if (document.getElementById('saida-anilha')) document.getElementById('saida-anilha').value = '';
+        if (document.getElementById('saida-destino')) document.getElementById('saida-destino').value = '';
+        if (document.getElementById('saida-foto-url')) document.getElementById('saida-foto-url').value = '';
         if (window.closeModal) window.closeModal('modal-add-saida');
+        else if (document.getElementById('modal-add-saida')) document.getElementById('modal-add-saida').style.display = 'none';
         renderSaida();
-    });
+        alert('🎉 Registro de expedição de saída salvo!');
+    };
+    document.getElementById('btn-save-saida')?.addEventListener('click', window.handleSaveSaida);
 
     document.getElementById('btn-export-quarentena-pdf')?.addEventListener('click', exportQuarentenaPdf);
     document.getElementById('btn-export-quarentena-csv')?.addEventListener('click', exportQuarentenaCsv);
@@ -4971,17 +4998,17 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
         }
     });
 
-    document.getElementById('btn-transmitir-nfe')?.addEventListener('click', async () => {
-        const animalAnilha = document.getElementById('nfe-animal-select').value;
-        const especie = document.getElementById('nfe-especie').value.trim();
-        const ncm = document.getElementById('nfe-ncm').value.trim();
-        const compradorNome = document.getElementById('nfe-comprador-nome').value.trim();
-        const compradorDoc = document.getElementById('nfe-comprador-doc').value.trim();
-        const compradorUf = document.getElementById('nfe-comprador-uf').value;
-        const cfop = document.getElementById('nfe-cfop').value;
-        const gta = document.getElementById('nfe-gta').value.trim();
-        const valor = parseFloat(document.getElementById('nfe-valor').value);
-        const obs = document.getElementById('nfe-obs').value.trim();
+    window.handleTransmitirNfe = async () => {
+        const animalAnilha = document.getElementById('nfe-animal-select')?.value;
+        const especie = document.getElementById('nfe-especie')?.value.trim();
+        const ncm = document.getElementById('nfe-ncm')?.value.trim();
+        const compradorNome = document.getElementById('nfe-comprador-nome')?.value.trim();
+        const compradorDoc = document.getElementById('nfe-comprador-doc')?.value.trim();
+        const compradorUf = document.getElementById('nfe-comprador-uf')?.value;
+        const cfop = document.getElementById('nfe-cfop')?.value;
+        const gta = document.getElementById('nfe-gta')?.value.trim();
+        const valor = parseFloat(document.getElementById('nfe-valor')?.value);
+        const obs = document.getElementById('nfe-obs')?.value.trim();
 
         if (!animalAnilha || !compradorNome || Number.isNaN(valor) || valor <= 0) {
             return alert('Preencha os campos obrigatórios: Animal do Plantel, Comprador e Valor válido.');
@@ -5010,7 +5037,6 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
                 return alert(`Erro ao emitir Nota Fiscal: ${result.error}`);
             }
 
-            // Registrar lançamento financeiro automático
             await DB.addFinanca({
                 tipo: 'entrada',
                 descricao: `Venda Animal Anilha ${animalAnilha} (NF-e Nº ${result.nota.numero})`,
@@ -5021,7 +5047,7 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
             alert(`🎉 NOTA FISCAL EMITIDA E AUTORIZADA PELA SEFAZ COM SUCESSO!\n\nNº da Nota: ${result.nota.numero}\nChave de Acesso: ${result.nota.chave}\nProtocolo: ${result.nota.protocolo}`);
 
             if (window.closeModal) window.closeModal('modal-emitir-nfe');
-            else document.getElementById('modal-emitir-nfe').style.display = 'none';
+            else if (document.getElementById('modal-emitir-nfe')) document.getElementById('modal-emitir-nfe').style.display = 'none';
 
             renderFinanceiro();
             renderDashboard();
@@ -5029,35 +5055,40 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
         } catch (err) {
             alert('Falha na comunicação com o emissor fiscal de notas.');
         }
-    });
+    };
+    document.getElementById('btn-transmitir-nfe')?.addEventListener('click', window.handleTransmitirNfe);
     
-    document.getElementById('btn-cancel-financa').addEventListener('click', () => { document.getElementById('modal-add-financa').style.display = 'none'; });
-    document.getElementById('btn-save-financa').addEventListener('click', async () => {
-        const descricao = document.getElementById('fin-desc').value.trim();
-        const valor = parseFloat(document.getElementById('fin-valor').value);
-        const tipo = document.getElementById('fin-tipo').value;
-        const data = document.getElementById('fin-data').value;
+    document.getElementById('btn-cancel-financa')?.addEventListener('click', () => { document.getElementById('modal-add-financa').style.display = 'none'; });
+
+    window.handleSaveFinanca = async () => {
+        const descricao = document.getElementById('fin-desc')?.value.trim();
+        const valor = parseFloat(document.getElementById('fin-valor')?.value);
+        const tipo = document.getElementById('fin-tipo')?.value;
+        const data = document.getElementById('fin-data')?.value;
         if (!descricao || Number.isNaN(valor) || valor <= 0) return alert('Preencha descrição e valor válido.');
         await DB.addFinanca({ tipo, descricao, valor, data });
-        document.getElementById('fin-desc').value = '';
-        document.getElementById('fin-valor').value = '';
-        document.getElementById('modal-add-financa').style.display = 'none';
+        if (document.getElementById('fin-desc')) document.getElementById('fin-desc').value = '';
+        if (document.getElementById('fin-valor')) document.getElementById('fin-valor').value = '';
+        if (window.closeModal) window.closeModal('modal-add-financa');
+        else if (document.getElementById('modal-add-financa')) document.getElementById('modal-add-financa').style.display = 'none';
         renderFinanceiro();
         renderDashboard();
-    });
+        alert('🎉 Lançamento financeiro salvo com sucesso!');
+    };
+    document.getElementById('btn-save-financa')?.addEventListener('click', window.handleSaveFinanca);
 
-    document.getElementById('btn-save-admin').addEventListener('click', async () => {
+    window.handleSaveAdmin = async () => {
         const ie = document.getElementById('admin-ie')?.value.trim() || '';
         const regime = document.getElementById('admin-regime')?.value || '';
         const ambiente = document.getElementById('admin-ambiente')?.value || '';
 
         await DB.updatePerfil({
-            nome_criatorio: document.getElementById('admin-criatorio-nome').value.trim(),
-            responsavel: document.getElementById('admin-responsavel').value.trim(),
-            ibama_ctf: document.getElementById('admin-ibama').value.trim(),
-            documento: document.getElementById('admin-doc').value.trim(),
-            endereco: document.getElementById('admin-endereco').value.trim(),
-            logo_url: sanitizeImageUrl(document.getElementById('admin-logo-url').value)
+            nome_criatorio: document.getElementById('admin-criatorio-nome')?.value.trim() || '',
+            responsavel: document.getElementById('admin-responsavel')?.value.trim() || '',
+            ibama_ctf: document.getElementById('admin-ibama')?.value.trim() || '',
+            documento: document.getElementById('admin-doc')?.value.trim() || '',
+            endereco: document.getElementById('admin-endereco')?.value.trim() || '',
+            logo_url: sanitizeImageUrl(document.getElementById('admin-logo-url')?.value || '')
         });
 
         fetch('/api/nfe/config', {
@@ -5066,8 +5097,9 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
             body: JSON.stringify({ ie, regime, ambiente })
         }).catch(() => {});
 
-        alert('Perfil oficial e Configurações Fiscais atualizados com sucesso.');
-    });
+        alert('🎉 Perfil oficial e Configurações Fiscais atualizados com sucesso!');
+    };
+    document.getElementById('btn-save-admin')?.addEventListener('click', window.handleSaveAdmin);
 
     document.getElementById('tutor-input').addEventListener('keypress', (event) => {
         if (event.key === 'Enter') handleChat('tutor-input', 'tutor-chat-history', 'Tutor Academia', 'Conceito importante: a herança ligada ao sexo em psitacídeos segue o padrão ZW. Fêmeas expressam mutações ligadas ao sexo com apenas um alelo.');

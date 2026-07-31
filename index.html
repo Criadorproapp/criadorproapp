@@ -977,7 +977,7 @@
                             </div>
                         </div>
                     </div>
-                    <button class="btn-ui btn-ui-primary" id="btn-save-admin" style="width:100%; margin-top:1.5rem;">💾 Salvar Perfil Oficial</button>
+                    <button class="btn-ui btn-ui-primary" id="btn-save-admin" onclick="window.handleSaveAdmin()" style="width:100%; margin-top:1.5rem;">💾 Salvar Perfil Oficial</button>
                 </div>
             </section>
 
@@ -1116,7 +1116,7 @@
             </div>
         </div>
         <div style="display:flex; gap:1rem; margin-top:1.5rem;">
-            <button class="btn-ui btn-ui-primary" id="btn-save-ave" style="flex:1;">Salvar Ave no Plantel</button>
+            <button class="btn-ui btn-ui-primary" id="btn-save-ave" onclick="window.handleSaveAve()" style="flex:1;">Salvar Ave no Plantel</button>
             <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-ave')" style="flex:1;">Cancelar</button>
         </div>
     </div>
@@ -1181,7 +1181,7 @@
             </div>
         </div>
         <div style="display:flex; gap:1rem; margin-top:1.5rem;">
-            <button class="btn-ui btn-ui-primary" id="btn-save-recinto" style="flex:1;">Salvar Recinto & Gerar Placa</button>
+            <button class="btn-ui btn-ui-primary" id="btn-save-recinto" onclick="window.handleSaveRecinto()" style="flex:1;">Salvar Recinto & Gerar Placa</button>
             <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-recinto')" style="flex:1;">Cancelar</button>
         </div>
     </div>
@@ -1241,7 +1241,7 @@
             </div>
         </div>
         <div style="display:flex; gap:1rem; margin-top:1.5rem;">
-            <button class="btn-ui btn-ui-primary" id="btn-save-quarentena" style="flex:1;">Registrar Quarentena</button>
+            <button class="btn-ui btn-ui-primary" id="btn-save-quarentena" onclick="window.handleSaveQuarentena()" style="flex:1;">Registrar Quarentena</button>
             <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-quarentena')" style="flex:1;">Cancelar</button>
         </div>
     </div>
@@ -1285,7 +1285,7 @@
             </div>
         </div>
         <div style="display:flex; gap:1rem; margin-top:1.5rem;">
-            <button class="btn-ui btn-ui-primary" id="btn-save-enfermaria" style="flex:1;">Salvar Internação</button>
+            <button class="btn-ui btn-ui-primary" id="btn-save-enfermaria" onclick="window.handleSaveEnfermaria()" style="flex:1;">Salvar Internação</button>
             <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-enfermaria')" style="flex:1;">Cancelar</button>
         </div>
     </div>
@@ -1337,7 +1337,7 @@
             </div>
         </div>
         <div style="display:flex; gap:1rem; margin-top:1.5rem;">
-            <button class="btn-ui btn-ui-primary" id="btn-save-saida" style="flex:1;">Registrar Expedição</button>
+            <button class="btn-ui btn-ui-primary" id="btn-save-saida" onclick="window.handleSaveSaida()" style="flex:1;">Registrar Expedição</button>
             <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-saida')" style="flex:1;">Cancelar</button>
         </div>
     </div>
@@ -1383,7 +1383,7 @@
             </div>
         </div>
         <div style="display:flex; gap:1rem; margin-top:1.5rem;">
-            <button class="btn-ui btn-ui-primary" id="btn-save-insumo" style="flex:1;">Salvar no Estoque</button>
+            <button class="btn-ui btn-ui-primary" id="btn-save-insumo" onclick="window.handleSaveInsumo()" style="flex:1;">Salvar no Estoque</button>
             <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-insumo')" style="flex:1;">Cancelar</button>
         </div>
     </div>
@@ -1424,7 +1424,7 @@
             </div>
         </div>
         <div style="display:flex; gap:1rem; margin-top:1.5rem;">
-            <button class="btn-ui btn-ui-primary" id="btn-save-cardapio" style="flex:1;">Salvar Cardápio</button>
+            <button class="btn-ui btn-ui-primary" id="btn-save-cardapio" onclick="window.handleSaveCardapio()" style="flex:1;">Salvar Cardápio</button>
             <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-cardapio')" style="flex:1;">Cancelar</button>
         </div>
     </div>
@@ -1460,7 +1460,7 @@
             </div>
         </div>
         <div style="display:flex; gap:1rem; margin-top:1.5rem;">
-            <button class="btn-ui btn-ui-primary" id="btn-save-escala-manejo" style="flex:1;">Salvar Escala</button>
+            <button class="btn-ui btn-ui-primary" id="btn-save-escala-manejo" onclick="window.handleSaveEscalaManejo()" style="flex:1;">Salvar Escala</button>
             <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-escala-manejo')" style="flex:1;">Cancelar</button>
         </div>
     </div>
@@ -1500,7 +1500,7 @@
             </div>
         </div>
         <div style="display:flex; gap:1rem; margin-top:1.5rem;">
-            <button class="btn-ui btn-ui-primary" id="btn-save-ovo" style="flex:1;">Salvar na Chocadeira</button>
+            <button class="btn-ui btn-ui-primary" id="btn-save-ovo" onclick="window.handleSaveOvo()" style="flex:1;">Salvar na Chocadeira</button>
             <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-ovo')" style="flex:1;">Cancelar</button>
         </div>
     </div>
@@ -1543,7 +1543,7 @@
             </div>
         </div>
         <div style="display:flex; gap:1rem; margin-top:1.5rem;">
-            <button class="btn-ui btn-ui-primary" id="btn-save-filhote-uti" style="flex:1;">Salvar na UTI</button>
+            <button class="btn-ui btn-ui-primary" id="btn-save-filhote-uti" onclick="window.handleSaveFilhoteUti()" style="flex:1;">Salvar na UTI</button>
             <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-filhote-uti')" style="flex:1;">Cancelar</button>
         </div>
     </div>
@@ -1583,7 +1583,7 @@
             </div>
         </div>
         <div style="display:flex; gap:1rem; margin-top:1.5rem;">
-            <button class="btn-ui btn-ui-primary" id="btn-save-peso-filhote" style="flex:1;">Salvar Pesagem</button>
+            <button class="btn-ui btn-ui-primary" id="btn-save-peso-filhote" onclick="window.handleSavePesoFilhote()" style="flex:1;">Salvar Pesagem</button>
             <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-peso-filhote')" style="flex:1;">Cancelar</button>
         </div>
     </div>
@@ -1618,7 +1618,7 @@
             </div>
         </div>
         <div style="display:flex; gap:1rem; margin-top:1.5rem;">
-            <button class="btn-ui btn-ui-primary" id="btn-save-financa" style="flex:1;">Salvar Lançamento</button>
+            <button class="btn-ui btn-ui-primary" id="btn-save-financa" onclick="window.handleSaveFinanca()" style="flex:1;">Salvar Lançamento</button>
             <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-financa')" style="flex:1;">Cancelar</button>
         </div>
     </div>
@@ -1702,7 +1702,7 @@
         </div>
 
         <div style="display:flex; gap:1rem; margin-top:1.5rem;">
-            <button class="btn-ui btn-ui-emerald" id="btn-transmitir-nfe" style="flex:2; padding:1rem;">⚡ Transmitir NF-e para a SEFAZ</button>
+            <button class="btn-ui btn-ui-emerald" id="btn-transmitir-nfe" onclick="window.handleTransmitirNfe()" style="flex:2; padding:1rem;">⚡ Transmitir NF-e para a SEFAZ</button>
             <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-emitir-nfe')" style="flex:1;">Cancelar</button>
         </div>
     </div>
