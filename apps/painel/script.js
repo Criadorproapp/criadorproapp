@@ -58,9 +58,8 @@ function __initPainel() {
     if (loginOverlay) loginOverlay.style.display = 'none';
     if (__appContainer) __appContainer.style.display = 'flex';
 
-    try {
-        const appContainer = document.querySelector('.app-container');
-        const loginError = document.getElementById('login-error');
+    const appContainer = document.querySelector('.app-container');
+    const loginError = document.getElementById('login-error');
     const userNameDisplay = document.getElementById('user-name-display');
     let isSignupMode = false;
     let selectedRecintoId = null;
@@ -4431,8 +4430,8 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
     document.getElementById('btn-do-login').addEventListener('click', handleLogin);
     document.getElementById('login-password').addEventListener('keypress', (event) => { if (event.key === 'Enter') handleLogin(); });
 
-    document.getElementById('btn-add-ave').addEventListener('click', () => { document.getElementById('modal-add-ave').style.display = 'block'; });
-    document.getElementById('btn-cancel-ave').addEventListener('click', () => { document.getElementById('modal-add-ave').style.display = 'none'; });
+    document.getElementById('btn-add-ave')?.addEventListener('click', () => { if (typeof openModal === 'function') openModal('modal-add-ave'); else document.getElementById('modal-add-ave').style.display = 'flex'; });
+    document.getElementById('btn-cancel-ave')?.addEventListener('click', () => { if (typeof closeModal === 'function') closeModal('modal-add-ave'); else document.getElementById('modal-add-ave').style.display = 'none'; });
     window.handleSaveAve = async () => {
         const anilha = document.getElementById('add-anilha')?.value.trim();
         const mutacao = document.getElementById('add-mutacao')?.value.trim();
@@ -4463,7 +4462,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         if (document.getElementById('add-foto-url')) document.getElementById('add-foto-url').value = '';
         if (document.getElementById('add-foto-preview')) document.getElementById('add-foto-preview').style.display = 'none';
 
-        if (window.closeModal) window.closeModal('modal-add-ave');
+        if (typeof closeModal === 'function') closeModal('modal-add-ave');
         else if (document.getElementById('modal-add-ave')) document.getElementById('modal-add-ave').style.display = 'none';
         renderPlantel();
         renderDashboard();
@@ -4574,53 +4573,11 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
             maeSelect.innerHTML = '<option value="">— Selecionar Fêmea do Plantel —</option>' +
                 femeas.map(a => `<option value="${escapeHtml(a.id)}">[${escapeHtml(a.anilha)}] ${escapeHtml(a.especie)} - ${escapeHtml(a.mutacao)}</option>`).join('');
         }
-    window.handleSaveAve = async () => {
-        const anilha = document.getElementById('add-anilha')?.value.trim();
-        const mutacao = document.getElementById('add-mutacao')?.value.trim();
-        if (!anilha || !mutacao) return alert('Preencha os campos obrigatórios: Anilha da Ave e Mutação / Cor.');
-
-        const especie = document.getElementById('add-especie')?.value || 'Ringneck';
-        const sexo = document.getElementById('add-sexo')?.value || 'Macho';
-        const pai_anilha = document.getElementById('add-pai-anilha')?.value.trim() || '';
-        const mae_anilha = document.getElementById('add-mae-anilha')?.value.trim() || '';
-        const nascimento = document.getElementById('add-nascimento')?.value || '';
-        const recinto = document.getElementById('add-recinto-select')?.value || '';
-        const foto_url = sanitizeImageUrl(document.getElementById('add-foto-url')?.value || '');
-
-        await DB.addAve({
-            anilha,
-            especie,
-            mutacao,
-            sexo,
-            pai_anilha,
-            mae_anilha,
-            nascimento,
-            recinto,
-            foto_url,
-            categoria: 'Plantel',
-            status: 'Ativo'
-        });
-
-        if (document.getElementById('add-anilha')) document.getElementById('add-anilha').value = '';
-        if (document.getElementById('add-mutacao')) document.getElementById('add-mutacao').value = '';
-        if (document.getElementById('add-pai-anilha')) document.getElementById('add-pai-anilha').value = '';
-        if (document.getElementById('add-mae-anilha')) document.getElementById('add-mae-anilha').value = '';
-        if (document.getElementById('add-nascimento')) document.getElementById('add-nascimento').value = '';
-        if (document.getElementById('add-foto-url')) document.getElementById('add-foto-url').value = '';
-
-        if (window.closeModal) window.closeModal('modal-add-ave');
-        else if (document.getElementById('modal-add-ave')) document.getElementById('modal-add-ave').style.display = 'none';
-
-        renderPlantel();
-        renderDashboard();
-
-        alert(`🎉 Ave ${anilha} cadastrada no plantel com sucesso!`);
     };
-    document.getElementById('btn-save-ave')?.addEventListener('click', window.handleSaveAve);
 
     document.getElementById('btn-add-recinto')?.addEventListener('click', () => {
         window.populateRecintoPairSelects();
-        if (window.openModal) window.openModal('modal-add-recinto');
+        if (typeof openModal === 'function') openModal('modal-add-recinto');
         else document.getElementById('modal-add-recinto').style.display = 'block';
     });
     document.getElementById('btn-cancel-recinto')?.addEventListener('click', () => { document.getElementById('modal-add-recinto').style.display = 'none'; });
@@ -4653,7 +4610,7 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
         if (document.getElementById('rec-pai-select')) document.getElementById('rec-pai-select').value = '';
         if (document.getElementById('rec-mae-select')) document.getElementById('rec-mae-select').value = '';
 
-        if (window.closeModal) window.closeModal('modal-add-recinto');
+        if (typeof closeModal === 'function') closeModal('modal-add-recinto');
         else if (document.getElementById('modal-add-recinto')) document.getElementById('modal-add-recinto').style.display = 'none';
 
         renderRecintos();
@@ -4682,7 +4639,7 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
         });
 
         if (document.getElementById('ovo-codigo')) document.getElementById('ovo-codigo').value = '';
-        if (window.closeModal) window.closeModal('modal-add-ovo');
+        if (typeof closeModal === 'function') closeModal('modal-add-ovo');
         else if (document.getElementById('modal-add-ovo')) document.getElementById('modal-add-ovo').style.display = 'none';
         renderOvos();
         alert('🎉 Ovo cadastrado na chocadeira com sucesso!');
@@ -4705,7 +4662,7 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
         });
 
         if (document.getElementById('uti-anilha')) document.getElementById('uti-anilha').value = '';
-        if (window.closeModal) window.closeModal('modal-add-filhote-uti');
+        if (typeof closeModal === 'function') closeModal('modal-add-filhote-uti');
         else if (document.getElementById('modal-add-filhote-uti')) document.getElementById('modal-add-filhote-uti').style.display = 'none';
         renderUtiFilhotes();
         alert('🎉 Filhote registrado na UTI Neonatal!');
@@ -4726,7 +4683,7 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
 
         if (document.getElementById('peso-valor')) document.getElementById('peso-valor').value = '';
         if (document.getElementById('peso-obs')) document.getElementById('peso-obs').value = '';
-        if (window.closeModal) window.closeModal('modal-add-peso-filhote');
+        if (typeof closeModal === 'function') closeModal('modal-add-peso-filhote');
         else if (document.getElementById('modal-add-peso-filhote')) document.getElementById('modal-add-peso-filhote').style.display = 'none';
         renderUtiFilhotes();
         alert('🎉 Pesagem do filhote salva!');
@@ -4754,7 +4711,7 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
 
         if (document.getElementById('insumo-nome')) document.getElementById('insumo-nome').value = '';
         if (document.getElementById('insumo-qtd')) document.getElementById('insumo-qtd').value = '';
-        if (window.closeModal) window.closeModal('modal-add-insumo');
+        if (typeof closeModal === 'function') closeModal('modal-add-insumo');
         else if (document.getElementById('modal-add-insumo')) document.getElementById('modal-add-insumo').style.display = 'none';
         renderEstoqueAlimentos();
         alert('🎉 Insumo salvo no estoque!');
@@ -4777,7 +4734,7 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
 
         if (document.getElementById('cardapio-nome')) document.getElementById('cardapio-nome').value = '';
         if (document.getElementById('cardapio-ingredientes')) document.getElementById('cardapio-ingredientes').value = '';
-        if (window.closeModal) window.closeModal('modal-add-cardapio');
+        if (typeof closeModal === 'function') closeModal('modal-add-cardapio');
         else if (document.getElementById('modal-add-cardapio')) document.getElementById('modal-add-cardapio').style.display = 'none';
         renderCardapios();
         alert('🎉 Cardápio salvo!');
@@ -4800,7 +4757,7 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
 
         if (document.getElementById('escala-tratador')) document.getElementById('escala-tratador').value = '';
         if (document.getElementById('escala-limpador')) document.getElementById('escala-limpador').value = '';
-        if (window.closeModal) window.closeModal('modal-add-escala-manejo');
+        if (typeof closeModal === 'function') closeModal('modal-add-escala-manejo');
         else if (document.getElementById('modal-add-escala-manejo')) document.getElementById('modal-add-escala-manejo').style.display = 'none';
         renderEscalaManejo();
         alert('🎉 Escala de manejo salva!');
@@ -4834,7 +4791,7 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
         if (document.getElementById('quar-anilha')) document.getElementById('quar-anilha').value = '';
         if (document.getElementById('quar-origem')) document.getElementById('quar-origem').value = '';
         if (document.getElementById('quar-doc-url')) document.getElementById('quar-doc-url').value = '';
-        if (window.closeModal) window.closeModal('modal-add-quarentena');
+        if (typeof closeModal === 'function') closeModal('modal-add-quarentena');
         else if (document.getElementById('modal-add-quarentena')) document.getElementById('modal-add-quarentena').style.display = 'none';
         renderQuarentena();
         alert('🎉 Ave registrada na quarentena!');
@@ -4862,7 +4819,7 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
         if (document.getElementById('enf-anilha')) document.getElementById('enf-anilha').value = '';
         if (document.getElementById('enf-diagnostico')) document.getElementById('enf-diagnostico').value = '';
         if (document.getElementById('enf-medicamento')) document.getElementById('enf-medicamento').value = '';
-        if (window.closeModal) window.closeModal('modal-add-enfermaria');
+        if (typeof closeModal === 'function') closeModal('modal-add-enfermaria');
         else if (document.getElementById('modal-add-enfermaria')) document.getElementById('modal-add-enfermaria').style.display = 'none';
         renderEnfermaria();
         alert('🎉 Internação registrada na enfermaria!');
@@ -4891,7 +4848,7 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
         if (document.getElementById('saida-anilha')) document.getElementById('saida-anilha').value = '';
         if (document.getElementById('saida-destino')) document.getElementById('saida-destino').value = '';
         if (document.getElementById('saida-foto-url')) document.getElementById('saida-foto-url').value = '';
-        if (window.closeModal) window.closeModal('modal-add-saida');
+        if (typeof closeModal === 'function') closeModal('modal-add-saida');
         else if (document.getElementById('modal-add-saida')) document.getElementById('modal-add-saida').style.display = 'none';
         renderSaida();
         alert('🎉 Registro de expedição de saída salvo!');
@@ -5028,7 +4985,7 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
             select.innerHTML = '<option value="">— Selecionar Animal do Plantel —</option>' +
                 DB.aves.map(a => `<option value="${escapeHtml(a.anilha)}" data-especie="${escapeHtml(a.especie)} (${escapeHtml(a.mutacao)})">[${escapeHtml(a.anilha)}] ${escapeHtml(a.especie)} - ${escapeHtml(a.mutacao)}</option>`).join('');
         }
-        if (window.openModal) window.openModal('modal-emitir-nfe');
+        if (typeof openModal === 'function') openModal('modal-emitir-nfe');
         else document.getElementById('modal-emitir-nfe').style.display = 'block';
     };
 
@@ -5088,7 +5045,7 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
 
             alert(`🎉 NOTA FISCAL EMITIDA E AUTORIZADA PELA SEFAZ COM SUCESSO!\n\nNº da Nota: ${result.nota.numero}\nChave de Acesso: ${result.nota.chave}\nProtocolo: ${result.nota.protocolo}`);
 
-            if (window.closeModal) window.closeModal('modal-emitir-nfe');
+            if (typeof closeModal === 'function') closeModal('modal-emitir-nfe');
             else if (document.getElementById('modal-emitir-nfe')) document.getElementById('modal-emitir-nfe').style.display = 'none';
 
             renderFinanceiro();
@@ -5111,7 +5068,7 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
         await DB.addFinanca({ tipo, descricao, valor, data });
         if (document.getElementById('fin-desc')) document.getElementById('fin-desc').value = '';
         if (document.getElementById('fin-valor')) document.getElementById('fin-valor').value = '';
-        if (window.closeModal) window.closeModal('modal-add-financa');
+        if (typeof closeModal === 'function') closeModal('modal-add-financa');
         else if (document.getElementById('modal-add-financa')) document.getElementById('modal-add-financa').style.display = 'none';
         renderFinanceiro();
         renderDashboard();
@@ -5179,10 +5136,6 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
     renderEnfermaria();
     renderSaida();
     switchAuthTab(false);
-    }
-    } catch (err) {
-        console.error('Falha na inicialização do modulo principal:', err);
-    }
 }
 
 // ============================================================
