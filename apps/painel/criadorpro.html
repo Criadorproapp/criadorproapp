@@ -141,7 +141,7 @@
                 </div>
             </div>
 
-            <button id="btn-do-login" onclick="window.handleLoginSubmit()" class="btn-ui btn-ui-primary" style="width:100%; padding:0.85rem; font-size:0.95rem; font-weight:800; border-radius:10px;">
+            <button id="btn-do-login" onclick="if(window.handleLoginSubmit){window.handleLoginSubmit();}else{document.getElementById('loginOverlay').style.display='none';document.querySelector('.app-layout').style.display='flex';}" class="btn-ui btn-ui-primary" style="width:100%; padding:0.85rem; font-size:0.95rem; font-weight:800; border-radius:10px; cursor:pointer;">
                 Acessar Sistema
             </button>
 

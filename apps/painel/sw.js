@@ -1,4 +1,4 @@
-const CACHE_NAME = 'criador-pro-cache-v1';
+const CACHE_NAME = 'criador-pro-cache-v3';
 const ASSETS_TO_CACHE = [
   './criadorpro.html',
   './style.css',
