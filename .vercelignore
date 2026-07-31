@@ -1,0 +1,11 @@
+# Ignorar módulos e scripts legados no deploy da Vercel
+JarvisAssistant/
+apps/jarvis-command/
+diagnostico_jarvis.py
+scripts/jarvis_bridge.ps1
+scripts/jarvis_log.txt
+apps/painel/jarvis_hud.html
+backup-jarvis-legacy.zip
+backup-codigo-*.zip
+*.temp.js
+msilog.txt
