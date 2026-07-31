@@ -1,10 +1,9 @@
-import {
-    GENETICS_RULES,
-    RINGNECK_CATALOG,
-    SPECIES_ROADMAP,
-    calculateMultiLocus,
-    runValidationSuite
-} from '../../packages/genetics-engine/index.js';
+// GENETICS ENGINE FALLBACK DEFS FOR STANDALONE DEPLOYMENT
+const GENETICS_RULES = window.GENETICS_RULES || {};
+const RINGNECK_CATALOG = window.RINGNECK_CATALOG || [];
+const SPECIES_ROADMAP = window.SPECIES_ROADMAP || [];
+const calculateMultiLocus = window.calculateMultiLocus || (() => ({}));
+const runValidationSuite = window.runValidationSuite || (() => ({}));
 
 function __initPainel() {
     const galleryUrl = 'ringneck_mutations_gallery_1775852218576.png';
@@ -2603,7 +2602,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         `;
     };
 
-    const renderFinanceiro = () => {
+    const renderFinanceiroLegacy = () => {
         const totals = DB.getTotais();
         document.getElementById('fin-entradas').textContent = formatCurrency(totals.entradas);
         document.getElementById('fin-saidas').textContent = formatCurrency(totals.saidas);
@@ -2612,169 +2611,6 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
 
         const tbody = document.querySelector('#fin-table tbody');
         if (!tbody) return;
-        tbody.innerHTML = [...DB.financas].reverse().map((financa) => `
-            <tr>
-                <td>${escapeHtml(financa.data || 'ÔÇö')}</td>
-                <td><span style="color:${financa.tipo === 'entrada' ? '#2ecc71' : '#e74c3c'}">${financa.tipo === 'entrada' ? 'Entrada' : 'Sa├¡da'}</span></td>
-                <td>${escapeHtml(financa.descricao)}</td>
-                <td style="font-weight:700;color:${financa.tipo === 'entrada' ? '#2ecc71' : '#e74c3c'}">${formatCurrency(financa.valor)}</td>
-                <td><button class="btn-delete-fin" data-id="${escapeHtml(financa.id)}" style="background:transparent;border:none;cursor:pointer;">Remover</button></td>
-            </tr>
-        `).join('');
-
-        tbody.querySelectorAll('.btn-delete-fin').forEach((button) => {
-            button.addEventListener('click', async (event) => {
-                const id = event.currentTarget.getAttribute('data-id');
-                if (!id || !confirm('Remover este lan├ºamento?')) return;
-                await DB.removeFinanca(id);
-                renderFinanceiro();
-                renderDashboard();
-            });
-        });
-    };
-
-    const handleChat = (inputId, historyId, botName, baseResp) => {
-        const input = document.getElementById(inputId);
-        const history = document.getElementById(historyId);
-        if (!input || !history || !input.value.trim()) return;
-
-        const userMessage = document.createElement('div');
-        userMessage.className = 'user-msg';
-        userMessage.innerText = input.value.trim();
-        history.appendChild(userMessage);
-        input.value = '';
-
-        setTimeout(() => {
-            const botMessage = document.createElement('div');
-            botMessage.className = 'vet-msg';
-            botMessage.innerText = `${botName}: ${baseResp}`;
-            history.appendChild(botMessage);
-            history.scrollTop = history.scrollHeight;
-        }, 500);
-    };
-
-    const loadProfileToForm = () => {
-        document.getElementById('admin-criatorio-nome').value = DB.perfil.nome_criatorio || '';
-        document.getElementById('admin-responsavel').value = DB.perfil.responsavel || DB.config.responsavel || '';
-        document.getElementById('admin-ibama').value = DB.perfil.ibama_ctf || '';
-        document.getElementById('admin-doc').value = DB.perfil.documento || '';
-        document.getElementById('admin-endereco').value = DB.perfil.endereco || '';
-        document.getElementById('admin-foco').value = DB.perfil.foco_criacao || '';
-        document.getElementById('admin-logo-url').value = DB.perfil.logo_url || '';
-        DB.applyProfile();
-    };
-
-    const updateSpecies = () => {
-        const speciesSelect = document.getElementById('species-select');
-        const paiSelect = document.getElementById('pai-select');
-        const maeSelect = document.getElementById('mae-select');
-        if (!speciesSelect || !paiSelect || !maeSelect) return;
-        const species = speciesSelect.value;
-        const options = SpeciesMutations[species].map((mutation) => `<option value="${escapeHtml(mutation)}">${escapeHtml(mutation)}</option>`).join('');
-        paiSelect.innerHTML = options;
-        maeSelect.innerHTML = options;
-    };
-    const initNavigation = () => {
-        document.querySelectorAll('.sidebar-nav li').forEach((item) => {
-            item.addEventListener('click', (event) => {
-                event.preventDefault();
-                const target = item.getAttribute('data-module');
-                document.querySelectorAll('.sidebar-nav li').forEach((navItem) => navItem.classList.remove('active'));
-                item.classList.add('active');
-                document.querySelectorAll('.module').forEach((module) => module.classList.toggle('active', module.id === target));
-                if (target === 'dashboard') renderDashboard();
-                if (target === 'plantel') renderPlantel();
-                if (target === 'recintos') renderRecintos();
-                if (target === 'financeiro') renderFinanceiro();
-            });
-        });
-    };
-
-    const books = [
-        { id: 1, title: 'Gen├®tica em Psitac├¡deos', color: '#2ecc71', content: 'Mendel e a cor das penas. Diferen├ºas entre heran├ºa autoss├┤mica e ligada ao sexo.' },
-        { id: 2, title: 'Manual Ringneck Pro', color: '#3498db', content: 'Padr├Áes de exposi├º├úo, identifica├º├úo e manejo da muta├º├úo Cleartail.' },
-        { id: 3, title: 'Medicina Avi├íria', color: '#e67e22', content: 'Protocolos de primeiros socorros e sinais cl├¡nicos iniciais em aves ornamentais.' },
-        { id: 4, title: 'Nutri├º├úo de Aves', color: '#e74c3c', content: 'Estrat├®gias de nutri├º├úo para manuten├º├úo, reprodu├º├úo e crescimento saud├ível.' },
-        { id: 5, title: 'Biologia Reprodutiva', color: '#9b59b6', content: 'Fases da postura, incuba├º├úo artificial e manejo de filhotes.' }
-    ];
-
-    const openBook = (book) => {
-        document.getElementById('book-title').innerText = book.title;
-        document.getElementById('page-content-title').innerText = `Cap├¡tulo Especial: ${book.title}`;
-        document.getElementById('page-content-text').innerText = book.content;
-        document.getElementById('modal-book-reader').style.display = 'flex';
-    };
-
-    const initLibrary = () => {
-        const libraryGrid = document.getElementById('library-grid');
-        if (!libraryGrid) return;
-        libraryGrid.innerHTML = '';
-        books.forEach((book) => {
-            const card = document.createElement('div');
-            card.className = 'book-card glass';
-            card.style.borderLeft = `4px solid ${book.color}`;
-            card.innerHTML = `<strong>${escapeHtml(book.title)}</strong><p class="small text-muted">Clique para ler o manual</p>`;
-            card.addEventListener('click', () => openBook(book));
-            libraryGrid.appendChild(card);
-        });
-    };
-
-    const switchAuthTab = (signupMode) => {
-        isSignupMode = signupMode;
-        loginError.style.display = 'none';
-        document.getElementById('tab-login').classList.toggle('active', !signupMode);
-        document.getElementById('tab-signup').classList.toggle('active', signupMode);
-        document.getElementById('btn-do-login').innerText = signupMode ? 'Criar Minha Conta' : 'Acessar Sistema';
-    };
-
-    const finishLogin = async (session) => {
-        DB.session = session || null;
-        loginError.style.display = 'none';
-        loginOverlay.style.display = 'none';
-        appContainer.style.display = 'flex';
-        renderDashboard();
-        renderPlantel();
-        renderRecintos();
-        renderFinanceiro();
-        if (session?.user?.id) {
-            await DB.syncWithCloud();
-            renderDashboard();
-            renderPlantel();
-            renderRecintos();
-            renderFinanceiro();
-        }
-    };
-
-    const handleLogin = async () => {
-        const email = document.getElementById('login-email').value.trim();
-        const password = document.getElementById('login-password').value.trim();
-        if (!email || !password) {
-            alert('Preencha todos os campos.');
-            return;
-        }
-
-        if (!supabase) {
-            if (email === 'admin@admin.com' && password === '123456') {
-                await finishLogin({ user: { email: 'admin@admin.com' } });
-            } else {
-                loginError.innerText = 'Credenciais inv├ílidas no modo local. Use admin@admin.com / 123456 ou configure o Supabase em config.js.';
-                loginError.style.display = 'block';
-            }
-            return;
-        }
-
-        const response = isSignupMode ? await supabase.auth.signUp({ email, password }) : await supabase.auth.signInWithPassword({ email, password });
-        if (response.error) {
-            loginError.innerText = response.error.message;
-            loginError.style.display = 'block';
-            return;
-        }
-        if (isSignupMode && !response.data.session) {
-            loginError.innerText = 'Conta criada. Verifique seu e-mail para confirmar o acesso, se sua configura├º├úo do Supabase exigir confirma├º├úo.';
-            loginError.style.display = 'block';
-            return;
-        }
-        await finishLogin(response.data.session);
     };
 
     const DB = new StorageService();
@@ -2814,14 +2650,14 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         });
         doc.save(`plantel_criador_pro_${new Date().toISOString().split('T')[0]}.pdf`);
     };
-    const renderDashboard = () => {
+    const renderDashboardLegacy = () => {
         const totals = DB.getTotais();
         document.getElementById('dash-aves').textContent = String(totals.total);
         document.getElementById('dash-pares').textContent = String(totals.pares);
         document.getElementById('dash-saldo').textContent = formatCurrency(totals.saldo);
     };
 
-    const renderPlantel = () => {
+    const renderPlantelLegacy = () => {
         const tbody = document.querySelector('#plantel-table tbody');
         if (!tbody) return;
 
@@ -3827,7 +3663,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         doc.save(`placa_recinto_${recinto.id}.pdf`);
     };
 
-    const renderRecintos = () => {
+    const renderRecintosLegacy = () => {
         const container = document.getElementById('recintos-grid-container');
         if (!container) return;
         container.innerHTML = '';
@@ -3905,7 +3741,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         renderRecintoDetail();
     };
 
-    const cruzarLocus = (a1, a2) => {
+    const cruzarLocusLegacy = (a1, a2) => {
         const p1 = a1 === 2 ? ['a', 'a'] : a1 === 1 ? ['A', 'a'] : ['A', 'A'];
         const p2 = a2 === 2 ? ['a', 'a'] : a2 === 1 ? ['A', 'a'] : ['A', 'A'];
         const results = {};
@@ -3918,7 +3754,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         return results;
     };
 
-    const calcularCruzamentoRingneck = (nomePai, nomeMae) => {
+    const calcularCruzamentoRingneckLegacy = (nomePai, nomeMae) => {
         const pai = ringneckGenetica[nomePai] || ringneckGenetica['Verde Ancestral'];
         const mae = ringneckGenetica[nomeMae] || ringneckGenetica['Verde Ancestral'];
         const loci = ['blue', 'ino', 'grey', 'opaline', 'indigo', 'violet', 'cleartail'];
@@ -3947,13 +3783,13 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         return filhotes.filter((item) => item.prob > 0).sort((a, b) => b.prob - a.prob);
     };
 
-    const calcularCruzamentoCalopsita = (nomePai, nomeMae) => {
+    const calcularCruzamentoCalopsitaLegacy = (nomePai, nomeMae) => {
         const pai = calopsitaGenetica[nomePai] || calopsitaGenetica.Cinza;
         const mae = calopsitaGenetica[nomeMae] || calopsitaGenetica.Cinza;
         const loci = ['ino', 'cb', 'canela', 'opaline'];
         const filhotes = [];
         loci.forEach((locus) => {
-            const result = cruzarLocus(pai[locus] || 0, mae[locus] || 0);
+            const result = cruzarLocusLegacy(pai[locus] || 0, mae[locus] || 0);
             const pExpr = result.aa || 0;
             const pSplit = result.Aa || 0;
             const labels = { ino: 'Lutino', cb: 'Cara Branca', canela: 'Canela', opaline: 'Arlequim' };
@@ -3964,7 +3800,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         if (todosZero || !filhotes.length) filhotes.push({ name: 'Cinza Normal', prob: 100, sex: 'M/F' });
         return filhotes.filter((item) => item.prob > 0).sort((a, b) => b.prob - a.prob);
     };
-    const runCruzamento = () => {
+    const runCruzamentoLegacy = () => {
         const grid = document.getElementById('results-grid');
         if (!grid) return;
         grid.innerHTML = '<div class="loading-dna">Analisando mutações...</div>';
@@ -3973,7 +3809,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         const nomeMae = document.getElementById('mae-select').value;
 
         setTimeout(() => {
-            const results = especie === 'ringneck' ? calcularCruzamentoRingneck(nomePai, nomeMae) : calcularCruzamentoCalopsita(nomePai, nomeMae);
+            const results = especie === 'ringneck' ? calcularCruzamentoRingneckLegacy(nomePai, nomeMae) : calcularCruzamentoCalopsitaLegacy(nomePai, nomeMae);
             if (!results.length) {
                 grid.innerHTML = '<div class="loading-dna">Nenhum resultado calculado para esta combinação.</div>';
                 return;
@@ -4005,7 +3841,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         }, 400);
     };
 
-    const runIdentification = () => {
+    const runIdentificationLegacy = () => {
         const olhos = document.getElementById('id-olhos').value;
         const cabeca = document.getElementById('id-cabeca').value;
         const dorso = document.getElementById('id-dorso').value;
@@ -4079,7 +3915,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         `;
     };
 
-    const renderFinanceiro = () => {
+    const renderFinanceiroLegacy2 = () => {
         const totals = DB.getTotais();
         document.getElementById('fin-entradas').textContent = formatCurrency(totals.entradas);
         document.getElementById('fin-saidas').textContent = formatCurrency(totals.saidas);
@@ -4109,27 +3945,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         });
     };
 
-    const handleChat = (inputId, historyId, botName, baseResp) => {
-        const input = document.getElementById(inputId);
-        const history = document.getElementById(historyId);
-        if (!input || !history || !input.value.trim()) return;
-
-        const userMessage = document.createElement('div');
-        userMessage.className = 'user-msg';
-        userMessage.innerText = input.value.trim();
-        history.appendChild(userMessage);
-        input.value = '';
-
-        setTimeout(() => {
-            const botMessage = document.createElement('div');
-            botMessage.className = 'vet-msg';
-            botMessage.innerText = `${botName}: ${baseResp}`;
-            history.appendChild(botMessage);
-            history.scrollTop = history.scrollHeight;
-        }, 500);
-    };
-
-    const loadProfileToForm = () => {
+    const loadProfileToFormLegacy = () => {
         document.getElementById('admin-criatorio-nome').value = DB.perfil.nome_criatorio || '';
         document.getElementById('admin-responsavel').value = DB.perfil.responsavel || DB.config.responsavel || '';
         document.getElementById('admin-ibama').value = DB.perfil.ibama_ctf || '';
@@ -4140,13 +3956,13 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         DB.applyProfile();
     };
 
-    const updateSpecies = () => {
+    const updateSpeciesLegacy = () => {
         const species = document.getElementById('species-select').value;
         const options = SpeciesMutations[species].map((mutation) => `<option value="${escapeHtml(mutation)}">${escapeHtml(mutation)}</option>`).join('');
         document.getElementById('pai-select').innerHTML = options;
         document.getElementById('mae-select').innerHTML = options;
     };
-    const goToModule = (target) => {
+    const goToModuleLegacy = (target) => {
         if (!target) return;
         document.querySelectorAll('.sidebar-nav li').forEach((navItem) => {
             navItem.classList.toggle('active', navItem.getAttribute('data-module') === target);
@@ -4161,7 +3977,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         if (target === 'master-admin') renderMasterAdminPanel();
     };
 
-    const initNavigation = () => {
+    const initNavigationLegacy = () => {
         document.querySelectorAll('.sidebar-nav li').forEach((item) => {
             item.addEventListener('click', (event) => {
                 event.preventDefault();
@@ -4170,7 +3986,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         });
     };
 
-    const initQuickActions = () => {
+    const initQuickActionsLegacy = () => {
         document.querySelectorAll('.quick-action-btn[data-quick-module]').forEach((button) => {
             button.addEventListener('click', () => {
                 const targetModule = button.getAttribute('data-quick-module');
@@ -4179,7 +3995,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         });
     };
 
-    const books = [
+    const booksLegacy = [
         { id: 1, title: 'Genética em Psitacídeos', color: '#2ecc71', content: 'Mendel e a cor das penas. Diferenças entre herança autossômica e ligada ao sexo.' },
         { id: 2, title: 'Manual Ringneck Pro', color: '#3498db', content: 'Padrões de exposição, identificação e manejo da mutação Cleartail.' },
         { id: 3, title: 'Medicina Aviária', color: '#e67e22', content: 'Protocolos de primeiros socorros e sinais clínicos iniciais em aves ornamentais.' },
@@ -4187,14 +4003,26 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         { id: 5, title: 'Biologia Reprodutiva', color: '#9b59b6', content: 'Fases da postura, incubação artificial e manejo de filhotes.' }
     ];
 
-    const openBook = (book) => {
+    const openBookLegacy = (book) => {
         document.getElementById('book-title').innerText = book.title;
         document.getElementById('page-content-title').innerText = `Capítulo Especial: ${book.title}`;
         document.getElementById('page-content-text').innerText = book.content;
         document.getElementById('modal-book-reader').style.display = 'flex';
     };
 
-    const initLibrary = () => {
+    const initLibraryLegacy = () => {
+        const libraryGrid = document.getElementById('library-grid');
+        if (!libraryGrid) return;
+    };
+
+    const openBookLegacy2 = (book) => {
+        document.getElementById('book-title').innerText = book.title;
+        document.getElementById('page-content-title').innerText = `Capítulo Especial: ${book.title}`;
+        document.getElementById('page-content-text').innerText = book.content;
+        document.getElementById('modal-book-reader').style.display = 'flex';
+    };
+
+    const initLibraryLegacy2 = () => {
         const libraryGrid = document.getElementById('library-grid');
         if (!libraryGrid) return;
         libraryGrid.innerHTML = '';
@@ -4580,22 +4408,23 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         }
     };
 
-    try {
-        if (supabase) {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) await finishLogin(session);
-            else {
+    (async () => {
+        try {
+            if (supabase) {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) await finishLogin(session);
+                else {
+                    const loginOverlayEl = document.getElementById('loginOverlay');
+                    if (loginOverlayEl) loginOverlayEl.style.display = 'flex';
+                }
+            } else {
                 const loginOverlayEl = document.getElementById('loginOverlay');
                 if (loginOverlayEl) loginOverlayEl.style.display = 'flex';
             }
-        } else {
-            // Em ambiente local sem Supabase, inicializa direto ou exibe overlay se desejado
-            const loginOverlayEl = document.getElementById('loginOverlay');
-            if (loginOverlayEl) loginOverlayEl.style.display = 'flex';
+        } catch (err) {
+            console.error('Falha na verificação de autenticação do Criador Pro:', err);
         }
-    } catch (err) {
-        console.error('Falha na verificação de autenticação do Criador Pro:', err);
-    }
+    })();
 
     document.getElementById('tab-login').addEventListener('click', () => switchAuthTab(false));
     document.getElementById('tab-signup').addEventListener('click', () => switchAuthTab(true));
@@ -4604,9 +4433,9 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
 
     document.getElementById('btn-add-ave').addEventListener('click', () => { document.getElementById('modal-add-ave').style.display = 'block'; });
     document.getElementById('btn-cancel-ave').addEventListener('click', () => { document.getElementById('modal-add-ave').style.display = 'none'; });
-    document.getElementById('btn-save-ave').addEventListener('click', async () => {
-        const anilha = document.getElementById('add-anilha').value.trim();
-        const mutacao = document.getElementById('add-mutacao').value.trim();
+    window.handleSaveAve = async () => {
+        const anilha = document.getElementById('add-anilha')?.value.trim();
+        const mutacao = document.getElementById('add-mutacao')?.value.trim();
         if (!anilha || !mutacao) return alert('Preencha ao menos a anilha e a mutação da ave.');
         const pai_anilha = document.getElementById('add-pai-anilha')?.value.trim() || '';
         const mae_anilha = document.getElementById('add-mae-anilha')?.value.trim() || '';
@@ -4615,32 +4444,35 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         const novaAve = await DB.addAve({
             anilha,
             mutacao,
-            especie: document.getElementById('add-especie').value,
-            sexo: document.getElementById('add-sexo').value,
+            especie: document.getElementById('add-especie')?.value || 'Ringneck',
+            sexo: document.getElementById('add-sexo')?.value || 'Macho',
             categoria: 'Plantel',
-            nascimento: document.getElementById('add-nascimento').value,
-            recinto: document.getElementById('add-recinto-select').value || '',
+            nascimento: document.getElementById('add-nascimento')?.value || '',
+            recinto: document.getElementById('add-recinto-select')?.value || '',
             pai_anilha,
             mae_anilha,
             foto_url,
             status: 'Ativo'
         });
         selectedAveId = novaAve?.id || selectedAveId;
-        document.getElementById('add-anilha').value = '';
-        document.getElementById('add-mutacao').value = '';
-        document.getElementById('add-nascimento').value = '';
+        if (document.getElementById('add-anilha')) document.getElementById('add-anilha').value = '';
+        if (document.getElementById('add-mutacao')) document.getElementById('add-mutacao').value = '';
+        if (document.getElementById('add-nascimento')) document.getElementById('add-nascimento').value = '';
         if (document.getElementById('add-pai-anilha')) document.getElementById('add-pai-anilha').value = '';
         if (document.getElementById('add-mae-anilha')) document.getElementById('add-mae-anilha').value = '';
         if (document.getElementById('add-foto-url')) document.getElementById('add-foto-url').value = '';
         if (document.getElementById('add-foto-preview')) document.getElementById('add-foto-preview').style.display = 'none';
 
         if (window.closeModal) window.closeModal('modal-add-ave');
-        else document.getElementById('modal-add-ave').style.display = 'none';
+        else if (document.getElementById('modal-add-ave')) document.getElementById('modal-add-ave').style.display = 'none';
         renderPlantel();
         renderDashboard();
         renderRecintos();
         updateMarketingSelect();
-    });
+        alert('🎉 Ave cadastrada e salva no plantel com sucesso!');
+    };
+
+    document.getElementById('btn-save-ave')?.addEventListener('click', window.handleSaveAve);
 
     document.getElementById('busca-plantel')?.addEventListener('input', renderPlantel);
         document.getElementById('btn-export-pdf').addEventListener('click', exportPlantelPdf);
@@ -4750,8 +4582,8 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
         else document.getElementById('modal-add-recinto').style.display = 'block';
     });
     document.getElementById('btn-cancel-recinto')?.addEventListener('click', () => { document.getElementById('modal-add-recinto').style.display = 'none'; });
-    document.getElementById('btn-save-recinto')?.addEventListener('click', async () => {
-        const nome = document.getElementById('rec-nome').value.trim();
+    window.handleSaveRecinto = async () => {
+        const nome = document.getElementById('rec-nome')?.value.trim();
         if (!nome) return alert('Informe o nome do recinto / setor.');
         const ala = document.getElementById('rec-ala')?.value || 'Ala de Matrizes';
         const tipo_comp = document.getElementById('rec-tipo-comp')?.value || 'Gaiola Convencional';
@@ -4766,7 +4598,7 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
         const paiStr = avePai ? `♂️ Pai: ${avePai.anilha}` : '';
         const maeStr = aveMae ? `♀️ Mãe: ${aveMae.anilha}` : '';
         const anilha_casal = [paiStr, maeStr].filter(Boolean).join(' | ') || 'Sem casal alocado';
-        const descricao = document.getElementById('rec-desc').value.trim();
+        const descricao = document.getElementById('rec-desc')?.value.trim() || '';
 
         const novoRec = await DB.addRecinto({ nome, ala, tipo_comp, qtd_comp, dimensoes, anilha_casal, descricao: descricao || ala });
 
@@ -4774,22 +4606,22 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
         if (aveMae) aveMae.recinto = novoRec.id;
         DB.saveAves();
 
-        document.getElementById('rec-nome').value = '';
-        document.getElementById('rec-desc').value = '';
+        if (document.getElementById('rec-nome')) document.getElementById('rec-nome').value = '';
+        if (document.getElementById('rec-desc')) document.getElementById('rec-desc').value = '';
         if (document.getElementById('rec-pai-select')) document.getElementById('rec-pai-select').value = '';
         if (document.getElementById('rec-mae-select')) document.getElementById('rec-mae-select').value = '';
 
         if (window.closeModal) window.closeModal('modal-add-recinto');
-        else document.getElementById('modal-add-recinto').style.display = 'none';
+        else if (document.getElementById('modal-add-recinto')) document.getElementById('modal-add-recinto').style.display = 'none';
 
         renderRecintos();
         renderPlantel();
         renderDashboard();
 
-        if (confirm('Recinto salvo com sucesso! Deseja baixar a Placa de Impressão PDF com QR Code agora?')) {
-            exportRecintoPlacaPdf(novoRec.id);
-        }
-    });
+        alert('🎉 Recinto salvo com sucesso!');
+    };
+
+    document.getElementById('btn-save-recinto')?.addEventListener('click', window.handleSaveRecinto);
 
     document.getElementById('btn-save-ovo')?.addEventListener('click', async () => {
         const codigo = document.getElementById('ovo-codigo').value.trim();
