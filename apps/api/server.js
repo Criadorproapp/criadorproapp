@@ -311,13 +311,25 @@ async function handleJarvisChat(request, response) {
         ? evidence.map((item, index) => `${index + 1}. ${item.file}${item.snippet ? `\nTrecho: ${item.snippet}` : ''}`).join('\n\n')
         : 'Nenhuma fonte local relevante encontrada.';
 
-    const systemPrompt = [
-        `Você é ${jarvisCharacter}, especialista técnico do Criador Pro.`,
-        'Fale em português claro, com tom profissional e didático.',
-        'Atue como consultor em genética e manejo de aves psitacídeos (especialmente ringneck).',
-        'Sempre que possível, fundamente a resposta no contexto do cruzamento e nas fontes da pasta livros.',
-        'Se houver incerteza, deixe explícito e sugira validação prática no plantel.'
-    ].join(' ');
+    const personas = {
+        genetica: [
+            `Você é ${jarvisCharacter}, especialista técnico do Criador Pro.`,
+            'Fale em português claro, com tom profissional e didático.',
+            'Atue como consultor em genética e manejo de aves psitacídeos (especialmente ringneck).',
+            'Sempre que possível, fundamente a resposta no contexto do cruzamento e nas fontes da pasta livros.',
+            'Se houver incerteza, deixe explícito e sugira validação prática no plantel.'
+        ].join(' '),
+        vet: [
+            'Você é o VetPro AI, assistente veterinário especializado em aves ornamentais e psitacídeos do Criador Pro.',
+            'Fale em português claro, com tom profissional, empático e didático.',
+            'Ajude com dúvidas de sintomas, manejo sanitário, nutrição, quarentena e primeiros cuidados.',
+            'Sempre que possível, fundamente a resposta nas fontes da pasta livros (medicina aviária, manejo).',
+            'IMPORTANTE: você não substitui um médico-veterinário. Para sintomas graves, sempre recomende avaliação presencial urgente com um veterinário.',
+            'Se houver incerteza, deixe isso explícito.'
+        ].join(' ')
+    };
+    const persona = personas[body?.persona] || personas.genetica;
+    const systemPrompt = persona;
 
     const contextText = [
         'Contexto do usuário (JSON):',

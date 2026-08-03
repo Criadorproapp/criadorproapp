@@ -15,6 +15,7 @@
     <script src="/vendor/qrcode.min.js"></script>
     <script src="/vendor/jspdf.umd.min.js"></script>
     <script src="/vendor/jspdf.plugin.autotable.min.js"></script>
+    <script src="/vendor/supabase.min.js"></script>
     <script src="/config.js"></script>
 </head>
 <body>
@@ -153,7 +154,7 @@
                 };
             </script>
 
-            <button id="btn-do-login" onclick="window.forceEnterSystem()" class="btn-ui btn-ui-primary" style="width:100%; padding:0.85rem; font-size:0.95rem; font-weight:800; border-radius:10px; cursor:pointer;">
+            <button id="btn-do-login" class="btn-ui btn-ui-primary" style="width:100%; padding:0.85rem; font-size:0.95rem; font-weight:800; border-radius:10px; cursor:pointer;">
                 Acessar Sistema
             </button>
 
@@ -211,13 +212,16 @@
             <li data-module="marketing">
                 <a href="#"><span class="nav-icon">📢</span> <span>Marketing</span></a>
             </li>
+            <li data-module="biblioteca">
+                <a href="#"><span class="nav-icon">📚</span> <span>Biblioteca & Tutor</span></a>
+            </li>
             <li data-module="financeiro">
                 <a href="#"><span class="nav-icon">💰</span> <span>Financeiro</span></a>
             </li>
             <li data-module="admin">
                 <a href="#"><span class="nav-icon">⚙️</span> <span>Meu Criatório</span></a>
             </li>
-            <li data-module="master-admin" id="nav-master-admin" style="border-top:1px dashed var(--border-glass); margin-top:0.5rem; padding-top:0.5rem;">
+            <li data-module="master-admin" id="nav-master-admin" style="display:none; border-top:1px dashed var(--border-glass); margin-top:0.5rem; padding-top:0.5rem;">
                 <a href="#"><span class="nav-icon">🛡️</span> <span style="color:#fbbf24; font-weight:800;">Painel Master</span></a>
             </li>
         </ul>
@@ -319,6 +323,42 @@
                             <span class="stat-trend trend-up">▲ Saldo positivo</span>
                         </div>
                     </div>
+
+                    <div class="stat-widget-card">
+                        <div class="stat-icon-wrapper stat-icon-emerald">💞</div>
+                        <div class="stat-data-box">
+                            <span class="stat-label">Pares Reprodutivos</span>
+                            <span class="stat-value" id="dash-pares">0</span>
+                            <span class="stat-trend trend-up">● Casais ativos</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-widget-card">
+                        <div class="stat-icon-wrapper stat-icon-cyan">🏗️</div>
+                        <div class="stat-data-box">
+                            <span class="stat-label">Total de Recintos</span>
+                            <span class="stat-value" id="dash-recintos">0</span>
+                            <span class="stat-trend trend-up">● Setores cadastrados</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-widget-card">
+                        <div class="stat-icon-wrapper stat-icon-amber">👶</div>
+                        <div class="stat-data-box">
+                            <span class="stat-label">Filhotes na UTI</span>
+                            <span class="stat-value" id="dash-filhotes-uti">0</span>
+                            <span class="stat-trend trend-up">● Em tratagem</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-widget-card">
+                        <div class="stat-icon-wrapper" style="background:rgba(244,63,94,0.15); color:#f43f5e;">⚠️</div>
+                        <div class="stat-data-box">
+                            <span class="stat-label">Alertas de Estoque</span>
+                            <span class="stat-value" id="dash-alertas-estoque">0</span>
+                            <span class="stat-trend trend-up">● Itens em falta</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="dash-two-columns">
@@ -411,6 +451,183 @@
                         </table>
                     </div>
                 </div>
+
+                <div class="glass-card" id="ave-detail-panel" style="margin-top:1.5rem;">
+                    <div class="page-title-box flex-header" style="margin-bottom:1rem;">
+                        <div>
+                            <h2 id="ave-detail-title" style="font-family:'Outfit',sans-serif;">Ficha do Animal</h2>
+                            <p id="ave-detail-subtitle">Selecione uma ave na tabela para abrir o histórico completo.</p>
+                        </div>
+                        <button class="btn-ui btn-ui-secondary" id="btn-ave-report-pdf" disabled>🖨️ Relatório PDF</button>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:1rem; margin-bottom:1.25rem;">
+                        <div class="stat-widget-card" style="padding:0.75rem 1rem;">
+                            <span class="stat-label">Categoria</span>
+                            <span class="stat-value" id="ave-meta-categoria" style="font-size:1.1rem;">—</span>
+                        </div>
+                        <div class="stat-widget-card" style="padding:0.75rem 1rem;">
+                            <span class="stat-label">Status de Matriz</span>
+                            <span class="stat-value" id="ave-meta-matriz" style="font-size:1.1rem;">Não definido</span>
+                        </div>
+                        <div class="stat-widget-card" style="padding:0.75rem 1rem;">
+                            <span class="stat-label">Último Exame</span>
+                            <span class="stat-value" id="ave-meta-exame" style="font-size:1rem;">Sem exames</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-card" style="margin-bottom:1.25rem;">
+                        <h3>Pedigree & Linhagem</h3>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:1rem;">
+                            <div class="form-group-ui">
+                                <label>Anilha do Pai</label>
+                                <input type="text" id="ave-pai-anilha" class="input-ui" placeholder="Ex: RN-2022-050">
+                            </div>
+                            <div class="form-group-ui">
+                                <label>Anilha da Mãe</label>
+                                <input type="text" id="ave-mae-anilha" class="input-ui" placeholder="Ex: RN-2022-088">
+                            </div>
+                            <div class="form-group-ui">
+                                <label>Linhagem</label>
+                                <input type="text" id="ave-linhagem" class="input-ui" placeholder="Ex: Linha Sol Nascente">
+                            </div>
+                            <div class="form-group-ui">
+                                <label>Status de Matriz</label>
+                                <select id="ave-matriz-status" class="input-ui">
+                                    <option value="Nao definido">Não definido</option>
+                                    <option value="Matriz Ativa">Matriz Ativa</option>
+                                    <option value="Aposentada">Aposentada</option>
+                                    <option value="Filhote">Filhote</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn-ui btn-ui-primary" id="btn-save-ave-base" style="margin-top:1rem;">💾 Salvar Pedigree</button>
+                    </div>
+
+                    <div class="glass-card" style="margin-bottom:1.25rem;">
+                        <h3>📋 Histórico de Manejo</h3>
+                        <div style="display:grid; grid-template-columns:130px 150px 1fr 120px; gap:0.6rem; align-items:end; margin-bottom:1rem;">
+                            <div class="form-group-ui"><label>Data</label><input type="date" id="ave-hist-date" class="input-ui"></div>
+                            <div class="form-group-ui"><label>Tipo</label>
+                                <select id="ave-hist-type" class="input-ui">
+                                    <option value="Manejo">Manejo</option>
+                                    <option value="Sanidade">Sanidade</option>
+                                    <option value="Alimentação">Alimentação</option>
+                                    <option value="Comportamento">Comportamento</option>
+                                </select>
+                            </div>
+                            <div class="form-group-ui"><label>Descrição</label><input type="text" id="ave-hist-text" class="input-ui" placeholder="Descreva o evento..."></div>
+                            <button class="btn-ui btn-ui-primary" id="btn-add-ave-hist">+ Adicionar</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="ui-data-table" id="ave-hist-table">
+                                <thead><tr><th>Data</th><th>Tipo</th><th>Descrição</th><th>Ações</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="glass-card" style="margin-bottom:1.25rem;">
+                        <h3>🧪 Exames</h3>
+                        <div style="display:grid; grid-template-columns:130px 150px 150px 1fr 120px; gap:0.6rem; align-items:end; margin-bottom:1rem;">
+                            <div class="form-group-ui"><label>Data</label><input type="date" id="ave-exam-date" class="input-ui"></div>
+                            <div class="form-group-ui"><label>Tipo</label><input type="text" id="ave-exam-type" class="input-ui" placeholder="Ex: Sexagem PCR"></div>
+                            <div class="form-group-ui"><label>Resultado</label><input type="text" id="ave-exam-result" class="input-ui" placeholder="Ex: Fêmea"></div>
+                            <div class="form-group-ui"><label>Link (opcional)</label><input type="text" id="ave-exam-link" class="input-ui" placeholder="URL do laudo"></div>
+                            <button class="btn-ui btn-ui-primary" id="btn-add-ave-exam">+ Adicionar</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="ui-data-table" id="ave-exam-table">
+                                <thead><tr><th>Data</th><th>Tipo</th><th>Resultado</th><th>Link</th><th>Ações</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="glass-card" style="margin-bottom:1.25rem;">
+                        <h3>📷 Fotos</h3>
+                        <div style="display:grid; grid-template-columns:1fr 1fr 120px; gap:0.6rem; align-items:end; margin-bottom:1rem;">
+                            <div class="form-group-ui"><label>URL da Foto</label><input type="text" id="ave-photo-url" class="input-ui" placeholder="Cole a URL da imagem..."></div>
+                            <div class="form-group-ui"><label>Legenda</label><input type="text" id="ave-photo-note" class="input-ui" placeholder="Ex: Foto de perfil"></div>
+                            <button class="btn-ui btn-ui-primary" id="btn-add-ave-photo">+ Adicionar</button>
+                        </div>
+                        <div id="ave-photo-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(160px,1fr)); gap:0.75rem;"></div>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3>🥚 Temporadas de Reprodução</h3>
+                        <div style="display:grid; grid-template-columns:1.2fr 100px 100px 120px 1fr 120px; gap:0.6rem; align-items:end; margin-bottom:1rem;">
+                            <div class="form-group-ui"><label>Temporada</label><input type="text" id="ave-season-name" class="input-ui" placeholder="Ex: 2026/1"></div>
+                            <div class="form-group-ui"><label>Ovos</label><input type="number" id="ave-season-ovos" class="input-ui" placeholder="0"></div>
+                            <div class="form-group-ui"><label>Eclodidos</label><input type="number" id="ave-season-eclodidos" class="input-ui" placeholder="0"></div>
+                            <div class="form-group-ui"><label>Desmamados</label><input type="number" id="ave-season-desmamados" class="input-ui" placeholder="0"></div>
+                            <div class="form-group-ui"><label>Notas</label><input type="text" id="ave-season-note" class="input-ui" placeholder="Observações"></div>
+                            <button class="btn-ui btn-ui-primary" id="btn-add-ave-season">+ Adicionar</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="ui-data-table" id="ave-season-table">
+                                <thead><tr><th>Temporada</th><th>Ovos</th><th>Eclodidos</th><th>Desmamados</th><th>Notas</th><th>Ações</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card" style="margin-top:1.5rem;">
+                    <div class="page-title-box flex-header" style="margin-bottom:1rem;">
+                        <div>
+                            <h2 style="font-family:'Outfit',sans-serif;">🌳 Árvore Genealógica</h2>
+                            <p>Analise ancestrais, filhos e risco de consanguinidade.</p>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                            <button class="btn-ui btn-ui-secondary" id="btn-genealogy-refresh">🔄 Atualizar</button>
+                            <button class="btn-ui btn-ui-secondary" id="btn-genealogy-export-pdf">📄 PDF</button>
+                            <button class="btn-ui btn-ui-secondary" id="btn-genealogy-export-png">🖼️ PNG</button>
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:1rem; margin-bottom:1.25rem;">
+                        <div class="form-group-ui">
+                            <label>Ave Raiz</label>
+                            <select id="genealogy-root-select" class="input-ui"></select>
+                        </div>
+                        <div class="form-group-ui">
+                            <label>Filtro de Espécie</label>
+                            <select id="genealogy-filter-species" class="input-ui"></select>
+                        </div>
+                        <div class="form-group-ui">
+                            <label>Filtro de Categoria</label>
+                            <select id="genealogy-filter-category" class="input-ui"></select>
+                        </div>
+                        <div class="form-group-ui" style="align-self:end;">
+                            <button class="btn-ui btn-ui-primary" id="btn-genealogy-use-selected" style="width:100%;">Usar Ave Selecionada</button>
+                        </div>
+                    </div>
+
+                    <div id="genealogy-graph" style="overflow-x:auto; margin-bottom:1.25rem;"></div>
+                    <div id="genealogy-parents" style="margin-bottom:1.25rem;"></div>
+
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:1.25rem;">
+                        <div>
+                            <h4>Casais desta Ave</h4>
+                            <div class="table-responsive">
+                                <table class="ui-data-table" id="genealogy-couples-table"><thead><tr><th>Casal</th><th>Filhotes</th><th>Última postura</th></tr></thead><tbody></tbody></table>
+                            </div>
+                        </div>
+                        <div>
+                            <h4>Filhos Diretos</h4>
+                            <div class="table-responsive">
+                                <table class="ui-data-table" id="genealogy-children-table"><thead><tr><th>Anilha</th><th>Mutação / Co-genitor</th><th>Nascimento</th><th>Temporadas</th></tr></thead><tbody></tbody></table>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top:1.25rem;">
+                        <h4>Todos os Casais do Plantel</h4>
+                        <div class="table-responsive">
+                            <table class="ui-data-table" id="genealogy-all-couples-table"><thead><tr><th>Casal</th><th>Filhotes</th><th>Origem</th></tr></thead><tbody></tbody></table>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <!-- MODULE 3: RECINTOS -->
@@ -424,6 +641,51 @@
                 </div>
 
                 <div id="recintos-grid-container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:1.5rem;"></div>
+
+                <div class="glass-card" id="recinto-detail-panel" style="margin-top:1.5rem;">
+                    <div class="page-title-box flex-header" style="margin-bottom:1rem;">
+                        <div>
+                            <h2 id="recinto-detail-title" style="font-family:'Outfit',sans-serif;">Ficha do Recinto</h2>
+                            <p id="recinto-detail-subtitle">Selecione um recinto para abrir os dados técnicos e o histórico.</p>
+                        </div>
+                        <button class="btn-ui btn-ui-secondary" id="btn-recinto-label-pdf" disabled>🖨️ Etiqueta PDF</button>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:1rem; margin-bottom:1.25rem;">
+                        <div class="stat-widget-card" style="padding:0.75rem 1rem;">
+                            <span class="stat-label">Tipo</span>
+                            <span class="stat-value" id="recinto-meta-tipo" style="font-size:1.1rem;">—</span>
+                        </div>
+                        <div class="stat-widget-card" style="padding:0.75rem 1rem;">
+                            <span class="stat-label">Aves alocadas</span>
+                            <span class="stat-value" id="recinto-meta-aves" style="font-size:1.1rem;">0</span>
+                        </div>
+                        <div class="stat-widget-card" style="padding:0.75rem 1rem;">
+                            <span class="stat-label">Última anotação</span>
+                            <span class="stat-value" id="recinto-meta-ultima" style="font-size:1rem;">Sem histórico</span>
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:130px 150px 1fr 120px; gap:0.6rem; align-items:end; margin-bottom:1rem;">
+                        <div class="form-group-ui"><label>Data</label><input type="date" id="rec-note-date" class="input-ui"></div>
+                        <div class="form-group-ui"><label>Tipo</label>
+                            <select id="rec-note-type" class="input-ui">
+                                <option value="Observacao">Observação</option>
+                                <option value="Limpeza">Limpeza</option>
+                                <option value="Manutenção">Manutenção</option>
+                                <option value="Sanidade">Sanidade</option>
+                            </select>
+                        </div>
+                        <div class="form-group-ui"><label>Anotação</label><input type="text" id="rec-note-text" class="input-ui" placeholder="Descreva o evento..."></div>
+                        <button class="btn-ui btn-ui-primary" id="btn-rec-note-add">+ Adicionar</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="ui-data-table" id="rec-notes-table">
+                            <thead><tr><th>Data</th><th>Tipo</th><th>Anotação</th><th>Ações</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
             </section>
 
             <!-- MODULE 4: MATERNIDADE -->
@@ -816,6 +1078,32 @@
                 </div>
             </section>
 
+            <!-- MODULE 8B: BIBLIOTECA & TUTOR -->
+            <section id="biblioteca" class="app-module">
+                <div class="page-title-box">
+                    <h1>📚 Biblioteca Técnica & Tutor de Genética</h1>
+                    <p>Consulte manuais de referência e tire dúvidas com o tutor de genética.</p>
+                </div>
+
+                <div class="glass-card" style="margin-bottom:1.5rem;">
+                    <h3 style="margin-bottom:1rem;">Manuais Disponíveis</h3>
+                    <div id="library-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:1rem;"></div>
+                </div>
+
+                <div class="glass-card chat-window-card">
+                    <h3 style="margin-bottom:1rem;">🎓 Tutor de Genética</h3>
+                    <div class="chat-history-scroll" id="tutor-chat-history">
+                        <div class="chat-msg-bubble chat-msg-ai">
+                            <strong>🎓 Tutor Academia:</strong> Olá! Posso ajudar a explicar conceitos de genética, herança de mutações e os manuais da biblioteca.
+                        </div>
+                    </div>
+                    <div class="chat-input-bar">
+                        <input type="text" id="tutor-input" class="input-ui" placeholder="Digite sua dúvida sobre genética..." style="margin:0;">
+                        <button class="btn-ui btn-ui-primary" id="btn-send-tutor">Enviar</button>
+                    </div>
+                </div>
+            </section>
+
             <!-- MODULE 9: FINANCEIRO -->
             <section id="financeiro" class="app-module">
                 <div class="page-title-box flex-header">
@@ -1054,6 +1342,19 @@
 </div>
 
 <!-- MODALS -->
+<!-- MODAL: LEITOR DE LIVRO -->
+<div id="modal-book-reader" class="modal-backdrop-ui">
+    <div class="modal-dialog-card" style="max-width:640px;">
+        <div class="modal-title-row">
+            <h2 id="page-content-title" style="font-family:'Outfit',sans-serif;">Capítulo</h2>
+            <button class="btn-close-modal" id="btn-close-reader">✕</button>
+        </div>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:0.75rem;" id="book-title"></p>
+        <div id="page-content-text" style="max-height:50vh; overflow-y:auto; line-height:1.6;"></div>
+        <button class="btn-ui btn-ui-secondary" id="btn-use-vet" style="margin-top:1rem;">🏥 Perguntar ao Vet AI sobre este conteúdo</button>
+    </div>
+</div>
+
 <!-- MODAL: ADD AVE -->
 <div id="modal-add-ave" class="modal-backdrop-ui">
     <div class="modal-dialog-card" style="max-width:680px;">
@@ -1805,6 +2106,9 @@
     }
 
     function switchModule(moduleName) {
+        if (moduleName === 'master-admin' && !window.__appIsMasterAdmin) {
+            return;
+        }
         document.querySelectorAll('.sidebar-menu li').forEach(item => {
             if (item.getAttribute('data-module') === moduleName) {
                 item.classList.add('active');
@@ -2017,7 +2321,7 @@
 </script>
 
 <!-- APPLICATION SCRIPT LOGIC -->
-<script src="script.js"></script>
+<script type="module" src="script.js"></script>
 
 </body>
 </html>

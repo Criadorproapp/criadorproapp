@@ -1,3 +1,18 @@
+// Motor de genetica real (packages/genetics-engine) — carregado como modulo ES.
+import {
+    GENETICS_RULES as __REAL_GENETICS_RULES,
+    RINGNECK_CATALOG as __REAL_RINGNECK_CATALOG,
+    SPECIES_ROADMAP as __REAL_SPECIES_ROADMAP,
+    calculateMultiLocus as __realCalculateMultiLocus,
+    runValidationSuite as __realRunValidationSuite
+} from '/packages/genetics-engine/index.js';
+
+window.GENETICS_RULES = __REAL_GENETICS_RULES;
+window.RINGNECK_CATALOG = __REAL_RINGNECK_CATALOG;
+window.SPECIES_ROADMAP = __REAL_SPECIES_ROADMAP;
+window.calculateMultiLocus = __realCalculateMultiLocus;
+window.runValidationSuite = __realRunValidationSuite;
+
 // GENETICS ENGINE FALLBACK DEFS FOR STANDALONE DEPLOYMENT
 const GENETICS_RULES = window.GENETICS_RULES || {};
 const RINGNECK_CATALOG = window.RINGNECK_CATALOG || [];
@@ -12,6 +27,11 @@ function __initPainel() {
     const hasSupabaseLib = Boolean(window.supabase && typeof window.supabase.createClient === 'function');
     const hasQrLib = typeof window.QRCode !== 'undefined';
     const hasPdfLib = Boolean(window.jspdf && typeof window.jspdf.jsPDF === 'function');
+
+    if (typeof window.goToModule !== 'function' && typeof window.switchModule === 'function') {
+        window.goToModule = window.switchModule;
+    }
+    const goToModule = window.goToModule || (() => {});
 
     let supabase = null;
     try {
@@ -51,14 +71,6 @@ function __initPainel() {
         'Albino': { ino: 2, cb: 2, canela: 0, opaline: 0 }
     };
 
-    const loginOverlay = document.getElementById('login-overlay');
-    const __appContainer = document.querySelector('.app-container');
-
-    // MÁXIMA PRIORIDADE: Bypass do login em modo local/desenvolvimento
-    if (loginOverlay) loginOverlay.style.display = 'none';
-    if (__appContainer) __appContainer.style.display = 'flex';
-
-    const appContainer = document.querySelector('.app-container');
     const loginError = document.getElementById('login-error');
     const userNameDisplay = document.getElementById('user-name-display');
     let isSignupMode = false;
@@ -843,12 +855,24 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
                     <td><span class="badge-pill badge-cyan">${escapeHtml(recNome)}</span></td>
                     <td><span class="badge-pill badge-emerald">${escapeHtml(ave.status)}</span></td>
                     <td>
+                        <button class="btn-open-ave" data-id="${escapeHtml(ave.id)}" style="background:#0ea5e9;border:none;cursor:pointer;color:#fff;padding:0.25rem 0.5rem;border-radius:8px;font-size:0.78rem;margin-right:6px;" title="Abrir Ficha Completa">Ficha</button>
                         <button class="btn-mkt-ave" data-id="${escapeHtml(ave.id)}" style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;margin-right:6px;" title="Criar Anúncio de Marketing">📢</button>
                         <button class="btn-delete-ave" data-id="${escapeHtml(ave.id)}" style="background:transparent;border:none;cursor:pointer;font-size:1.1rem;" title="Remover Ave">❌</button>
                     </td>
                 </tr>
             `;
         }).join('');
+
+        tbody.querySelectorAll('.btn-open-ave').forEach((button) => {
+            button.addEventListener('click', () => {
+                const id = button.getAttribute('data-id');
+                if (!id) return;
+                selectedAveId = id;
+                renderAveDetail();
+                const panel = document.getElementById('ave-detail-panel');
+                if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
 
         tbody.querySelectorAll('.btn-delete-ave').forEach((button) => {
             button.addEventListener('click', async (event) => {
@@ -887,6 +911,11 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
             ovoRecintoSelect.innerHTML = '<option value="">— Selecionar Recinto Origem —</option>' + DB.recintos.map((recinto) => `<option value="${escapeHtml(recinto.id)}">${escapeHtml(recinto.nome)} (${escapeHtml(recinto.ala || 'Matrizes')})</option>`).join('');
         }
         updateMarketingSelect();
+
+        if (selectedAveId && !DB.aves.some((ave) => ave.id === selectedAveId)) selectedAveId = null;
+        if (!selectedAveId && DB.aves.length) selectedAveId = DB.aves[0].id;
+        renderAveDetail();
+        renderGenealogyPanel();
     };
 
     const renderRecintos = () => {
@@ -922,12 +951,24 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
                     </div>
 
                     <div style="display:flex; gap:0.5rem; margin-top:1rem; border-top:1px solid var(--border-glass); padding-top:0.85rem;">
+                        <button class="btn-ui btn-ui-secondary btn-open-recinto" data-id="${escapeHtml(recinto.id)}" style="flex:1; padding:0.45rem 0.8rem; font-size:0.8rem;">📋 Ficha</button>
                         <button class="btn-ui btn-ui-secondary btn-placa-pdf" data-id="${escapeHtml(recinto.id)}" style="flex:1; padding:0.45rem 0.8rem; font-size:0.8rem;">🖨️ Placa PDF</button>
                         <button class="btn-ui btn-ui-secondary btn-delete-recinto" data-id="${escapeHtml(recinto.id)}" style="padding:0.45rem; font-size:0.8rem; color:#f43f5e;" title="Excluir Recinto">❌</button>
                     </div>
                 </div>
             `;
         }).join('');
+
+        container.querySelectorAll('.btn-open-recinto').forEach((button) => {
+            button.addEventListener('click', (e) => {
+                const id = e.currentTarget.getAttribute('data-id');
+                if (!id) return;
+                selectedRecintoId = id;
+                renderRecintoDetail();
+                const panel = document.getElementById('recinto-detail-panel');
+                if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
 
         container.querySelectorAll('.btn-placa-pdf').forEach((button) => {
             button.addEventListener('click', (e) => {
@@ -941,11 +982,15 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
                 const id = e.currentTarget.getAttribute('data-id');
                 if (!id || !confirm('Remover este recinto?')) return;
                 await DB.removeRecinto(id);
+                if (selectedRecintoId === id) selectedRecintoId = null;
                 renderRecintos();
                 renderPlantel();
                 renderDashboard();
             });
         });
+
+        if (selectedRecintoId && !DB.recintos.some((recinto) => recinto.id === selectedRecintoId)) selectedRecintoId = null;
+        renderRecintoDetail();
     };
 
     const exportRecintoPlacaPdf = (recintoId) => {
@@ -2168,12 +2213,12 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         });
 
         // Acoes do Menu
-        document.getElementById('btn-run-tests-calc').addEventListener('click', () => {
-            document.querySelector('[data-calc-tab="validacao"]').click();
+        document.getElementById('btn-run-tests-calc')?.addEventListener('click', () => {
+            document.querySelector('[data-calc-tab="validacao"]')?.click();
         });
 
-        document.getElementById('btn-export-pdf-calc').addEventListener('click', exportGeneticPdf);
-        document.getElementById('btn-export-txt-calc').addEventListener('click', exportGeneticTxt);
+        document.getElementById('btn-export-pdf-calc')?.addEventListener('click', exportGeneticPdf);
+        document.getElementById('btn-export-txt-calc')?.addEventListener('click', exportGeneticTxt);
         if (pdfDownloadBtn) {
             pdfDownloadBtn.disabled = !lastCalcResultV2;
             pdfDownloadBtn.addEventListener('click', exportGeneticPdf);
@@ -2227,7 +2272,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
                     ${maleTruncated ? `<div class="text-muted small mt-2">Mostrando top ${maleRows.length} resultados.</div>` : ''}
                 </div>
                 <div class="mt-3">
-                    <h5>F├¬meas:</h5>
+                    <h5>Fêmeas:</h5>
                     ${femaleRows.map(f => `<div>${f.label}: <strong>${f.percent}</strong></div>`).join('')}
                     ${femaleTruncated ? `<div class="text-muted small mt-2">Mostrando top ${femaleRows.length} resultados.</div>` : ''}
                 </div>
@@ -2257,7 +2302,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
     };
 
     const exportGeneticTxt = () => {
-        const content = "RELAT├ôRIO GEN├ëTICO - CRIADOR PRO\n\nResultado do Cruzamento:\n" + document.getElementById('results-grid-v2').innerText;
+        const content = "RELATÓRIO GENÉTICO - CRIADOR PRO\n\nResultado do Cruzamento:\n" + document.getElementById('results-grid-v2').innerText;
         const blob = new Blob([content], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -2473,7 +2518,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
             if (pVerdeLivre > 0) filhotes.push({ name: resultadosLoci.blue.Aa ? 'Verde / Azul (Split)' : 'Verde Ancestral', prob: pVerdeLivre, sex: 'M/F' });
         }
         if (pGrey > 0) filhotes.push({ name: 'Cinza', prob: pGrey, sex: 'M/F' });
-        if (pIndigo > 0 && pBlue === 0) filhotes.push({ name: '├ìndigo', prob: pIndigo, sex: 'M/F' });
+        if (pIndigo > 0 && pBlue === 0) filhotes.push({ name: '�ndigo', prob: pIndigo, sex: 'M/F' });
         if (pViolet > 0) filhotes.push({ name: 'Violeta SF', prob: pViolet, sex: 'M/F' });
         return filhotes.filter((item) => item.prob > 0).sort((a, b) => b.prob - a.prob);
     };
@@ -2498,7 +2543,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
     const runCruzamento = () => {
         const grid = document.getElementById('results-grid');
         if (!grid) return;
-        grid.innerHTML = '<div class="loading-dna">Analisando muta├º├Áes...</div>';
+        grid.innerHTML = '<div class="loading-dna">Analisando muta��es...</div>';
         const especie = document.getElementById('species-select').value;
         const nomePai = document.getElementById('pai-select').value;
         const nomeMae = document.getElementById('mae-select').value;
@@ -2506,13 +2551,13 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         setTimeout(() => {
             const results = especie === 'ringneck' ? calcularCruzamentoRingneck(nomePai, nomeMae) : calcularCruzamentoCalopsita(nomePai, nomeMae);
             if (!results.length) {
-                grid.innerHTML = '<div class="loading-dna">Nenhum resultado calculado para esta combina├º├úo.</div>';
+                grid.innerHTML = '<div class="loading-dna">Nenhum resultado calculado para esta combina��o.</div>';
                 return;
             }
             const totalProb = results.reduce((sum, item) => sum + item.prob, 0);
             grid.innerHTML = `
                 <div class="result-box glass mt-4">
-                    <h4>Estimativa de Filhotes - ${escapeHtml(nomePai)} ├ù ${escapeHtml(nomeMae)}</h4>
+                    <h4>Estimativa de Filhotes - ${escapeHtml(nomePai)} � ${escapeHtml(nomeMae)}</h4>
                     <div class="res-list">
                         ${results.map((result) => {
                             const pct = totalProb > 0 ? Math.round(result.prob / totalProb * 100) : result.prob;
@@ -2530,7 +2575,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
                             `;
                         }).join('')}
                     </div>
-                    <p style="font-size:0.75rem;color:var(--text-muted);margin-top:1rem;">* Valores aproximados baseados em heran├ºa mendeliana simples.</p>
+                    <p style="font-size:0.75rem;color:var(--text-muted);margin-top:1rem;">* Valores aproximados baseados em heran�a mendeliana simples.</p>
                 </div>
             `;
         }, 400);
@@ -2562,47 +2607,47 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         } else if (isCinza && cabeca === 'normal') {
             fenotipo = 'Cinza';
             genetica = 'grey grey';
-            notas.push('Gene cinza autoss├┤mico dominante. Pode sobrepor azul.');
+            notas.push('Gene cinza autoss$mico dominante. Pode sobrepor azul.');
         } else if (isAzul) {
             fenotipo = 'Azul Sky';
             genetica = 'bb / +/+';
-            notas.push('Dilui├º├úo de faeomelanina por dois alelos recessivos blue.');
+            notas.push('Dilui��o de faeomelanina por dois alelos recessivos blue.');
         } else if (dorso === 'verde' && cabeca === 'cb') {
             fenotipo = 'Cara Branca';
             genetica = 'cb cb';
-            notas.push('Muta├º├úo cara branca, autoss├┤mica recessiva.');
+            notas.push('Muta��o cara branca, autoss$mica recessiva.');
         } else if (dorso === 'verde' && cabeca === 'buttercup') {
             fenotipo = 'Buttercup / Lutino parcial';
             genetica = 'Verificar';
-            notas.push('Cabe├ºa amarela intensa pode indicar Lutino ou Buttercup.');
+            notas.push('Cabe�a amarela intensa pode indicar Lutino ou Buttercup.');
         } else if (dorso === 'indigo') {
-            fenotipo = '├ìndigo';
+            fenotipo = '�ndigo';
             genetica = 'ind ind';
-            notas.push('Muta├º├úo ├¡ndigo: corpo azul-esverdeado profundo, autoss├┤mica recessiva.');
+            notas.push('Muta��o �ndigo: corpo azul-esverdeado profundo, autoss$mica recessiva.');
         } else if (dorso === 'violeta') {
             fenotipo = 'Violeta SF';
             genetica = 'Vt / +';
-            notas.push('Violeta SF: um alelo violeta. Cor roxa no peito vis├¡vel.');
+            notas.push('Violeta SF: um alelo violeta. Cor roxa no peito vis�vel.');
         } else {
             genetica = 'BB / +/+';
-            notas.push('Fen├│tipo selvagem. Sem muta├º├Áes vis├¡veis detectadas.');
+            notas.push('Fentipo selvagem. Sem muta��es vis�veis detectadas.');
         }
 
-        if (anel === 'amarelo') notas.push('Colar amarelo vis├¡vel - macho adulto.');
-        if (anel === 'ausente') notas.push('Sem colar - f├¬mea ou jovem.');
+        if (anel === 'amarelo') notas.push('Colar amarelo vis�vel - macho adulto.');
+        if (anel === 'ausente') notas.push('Sem colar - f�mea ou jovem.');
 
         panel.innerHTML = `
             <div class="diagnosis-header glass mb-3">LAUDO PERICIAL</div>
             <div class="res-row glass">
                 <div class="bird-thumb" style="background-image:url('${galleryUrl}')"></div>
                 <div class="res-data">
-                    <div class="diag-title">FEN├ôTIPO IDENTIFICADO</div>
+                    <div class="diag-title">FEN�TIPO IDENTIFICADO</div>
                     <div class="diag-value" style="font-size:1.4rem;font-weight:800;color:var(--primary)">${escapeHtml(fenotipo)}</div>
-                    <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Gen├│tipo prov├ível: <code>${escapeHtml(genetica)}</code></div>
+                    <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Gentipo prov�vel: <code>${escapeHtml(genetica)}</code></div>
                 </div>
             </div>
             <div class="mt-3 p-3 glass" style="background:rgba(0,0,0,0.2);">
-                <strong>Notas T├®cnicas:</strong><br>
+                <strong>Notas T�cnicas:</strong><br>
                 <ul style="margin-top:0.5rem;padding-left:1.2rem;">
                     ${notas.map((nota) => `<li style="margin-bottom:0.4rem;">${escapeHtml(nota)}</li>`).join('')}
                 </ul>
@@ -3953,22 +3998,26 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         });
     };
 
-    const loadProfileToFormLegacy = () => {
-        document.getElementById('admin-criatorio-nome').value = DB.perfil.nome_criatorio || '';
-        document.getElementById('admin-responsavel').value = DB.perfil.responsavel || DB.config.responsavel || '';
-        document.getElementById('admin-ibama').value = DB.perfil.ibama_ctf || '';
-        document.getElementById('admin-doc').value = DB.perfil.documento || '';
-        document.getElementById('admin-endereco').value = DB.perfil.endereco || '';
-        document.getElementById('admin-foco').value = DB.perfil.foco_criacao || '';
-        document.getElementById('admin-logo-url').value = DB.perfil.logo_url || '';
+    const loadProfileToForm = () => {
+        const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+        setVal('admin-criatorio-nome', DB.perfil.nome_criatorio || '');
+        setVal('admin-responsavel', DB.perfil.responsavel || DB.config.responsavel || '');
+        setVal('admin-ibama', DB.perfil.ibama_ctf || '');
+        setVal('admin-doc', DB.perfil.documento || '');
+        setVal('admin-endereco', DB.perfil.endereco || '');
+        setVal('admin-foco', DB.perfil.foco_criacao || '');
+        setVal('admin-logo-url', DB.perfil.logo_url || '');
         DB.applyProfile();
     };
 
-    const updateSpeciesLegacy = () => {
-        const species = document.getElementById('species-select').value;
+    const updateSpecies = () => {
+        const species = document.getElementById('species-select')?.value;
+        if (!species || !SpeciesMutations[species]) return;
         const options = SpeciesMutations[species].map((mutation) => `<option value="${escapeHtml(mutation)}">${escapeHtml(mutation)}</option>`).join('');
-        document.getElementById('pai-select').innerHTML = options;
-        document.getElementById('mae-select').innerHTML = options;
+        const paiSelectEl = document.getElementById('pai-select');
+        const maeSelectEl = document.getElementById('mae-select');
+        if (paiSelectEl) paiSelectEl.innerHTML = options;
+        if (maeSelectEl) maeSelectEl.innerHTML = options;
     };
     const goToModuleLegacy = (target) => {
         if (!target) return;
@@ -3985,7 +4034,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         if (target === 'master-admin') renderMasterAdminPanel();
     };
 
-    const initNavigationLegacy = () => {
+    const initNavigation = () => {
         document.querySelectorAll('.sidebar-nav li').forEach((item) => {
             item.addEventListener('click', (event) => {
                 event.preventDefault();
@@ -3994,7 +4043,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         });
     };
 
-    const initQuickActionsLegacy = () => {
+    const initQuickActions = () => {
         document.querySelectorAll('.quick-action-btn[data-quick-module]').forEach((button) => {
             button.addEventListener('click', () => {
                 const targetModule = button.getAttribute('data-quick-module');
@@ -4003,7 +4052,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         });
     };
 
-    const booksLegacy = [
+    const books = [
         { id: 1, title: 'Genética em Psitacídeos', color: '#2ecc71', content: 'Mendel e a cor das penas. Diferenças entre herança autossômica e ligada ao sexo.' },
         { id: 2, title: 'Manual Ringneck Pro', color: '#3498db', content: 'Padrões de exposição, identificação e manejo da mutação Cleartail.' },
         { id: 3, title: 'Medicina Aviária', color: '#e67e22', content: 'Protocolos de primeiros socorros e sinais clínicos iniciais em aves ornamentais.' },
@@ -4023,14 +4072,14 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         if (!libraryGrid) return;
     };
 
-    const openBookLegacy2 = (book) => {
+    const openBook = (book) => {
         document.getElementById('book-title').innerText = book.title;
         document.getElementById('page-content-title').innerText = `Capítulo Especial: ${book.title}`;
         document.getElementById('page-content-text').innerText = book.content;
         document.getElementById('modal-book-reader').style.display = 'flex';
     };
 
-    const initLibraryLegacy2 = () => {
+    const initLibrary = () => {
         const libraryGrid = document.getElementById('library-grid');
         if (!libraryGrid) return;
         libraryGrid.innerHTML = '';
@@ -4291,31 +4340,32 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         const loginErrorEl = document.getElementById('loginError');
         const loginOverlayEl = document.getElementById('loginOverlay');
         const appContainerEl = document.querySelector('.app-layout');
-        const userEmail = session?.user?.email || document.getElementById('login-email')?.value || '';
+        const masterNav = document.getElementById('nav-master-admin');
 
         if (loginErrorEl) loginErrorEl.style.display = 'none';
         if (loginOverlayEl) loginOverlayEl.style.display = 'none';
         if (appContainerEl) appContainerEl.style.display = 'flex';
 
-        // Verificar se é Conta Master Admin
-        if (userEmail.toLowerCase().includes('admin')) {
-            isMasterAdmin = true;
-            const masterNav = document.getElementById('nav-master-admin');
-            if (masterNav) masterNav.style.display = 'block';
-        }
+        // isMasterAdmin só é concedido com base no campo real is_admin do perfil na nuvem (ver DB.syncWithCloud).
+        isMasterAdmin = false;
+        window.__appIsMasterAdmin = false;
+        if (masterNav) masterNav.style.display = 'none';
 
         renderDashboard();
         renderPlantel();
         renderRecintos();
         renderFinanceiro();
-        if (isMasterAdmin) renderMasterAdminPanel();
 
         if (session?.user?.id) {
             await DB.syncWithCloud();
+            isMasterAdmin = DB.perfil?.is_admin === true;
+            window.__appIsMasterAdmin = isMasterAdmin;
+            if (masterNav) masterNav.style.display = isMasterAdmin ? 'block' : 'none';
             renderDashboard();
             renderPlantel();
             renderRecintos();
             renderFinanceiro();
+            if (isMasterAdmin) renderMasterAdminPanel();
         }
         if (pendingRouteModule) goToModule(pendingRouteModule);
         if (pendingRouteRecinto) {
@@ -4390,12 +4440,6 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
 
             if (!email || !password) {
                 alert('Informe e-mail e senha de acesso.');
-                return;
-            }
-
-            // Acesso garantido para o Administrador Master
-            if (email.toLowerCase().includes('admin')) {
-                await finishLogin({ user: { email, id: 'admin-master-id' } });
                 return;
             }
 
@@ -4972,12 +5016,79 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
         exportGenealogyPng(selectedAveId);
     });
 
-    document.getElementById('species-select').addEventListener('change', updateSpecies);
-    document.getElementById('btn-cruzamento').addEventListener('click', runCruzamento);
-    document.getElementById('btn-identificar').addEventListener('click', runIdentification);
-    document.getElementById('btn-send-vet').addEventListener('click', () => handleChat('vet-input', 'vet-chat-history', 'VetPro AI', 'Analisando sintomas com base no protocolo clínico. Recomendo avaliação das fezes, isolamento preventivo e consulta presencial se persistir por mais de 48h.'));
-    document.getElementById('vet-input').addEventListener('keypress', (event) => {
-        if (event.key === 'Enter') handleChat('vet-input', 'vet-chat-history', 'VetPro AI', 'Analisando sintomas com base no protocolo clínico. Recomendo avaliação das fezes, isolamento preventivo e consulta presencial se persistir por mais de 48h.');
+    const handleChat = (inputId, historyId, botName, cannedReply) => {
+        const inputEl = document.getElementById(inputId);
+        const historyEl = document.getElementById(historyId);
+        if (!inputEl || !historyEl) return;
+        const text = inputEl.value.trim();
+        if (!text) return;
+        const userBubble = document.createElement('div');
+        userBubble.className = 'user-msg';
+        userBubble.innerText = text;
+        historyEl.appendChild(userBubble);
+
+        const botBubble = document.createElement('div');
+        botBubble.className = 'vet-msg';
+        botBubble.innerText = `${botName}: ${cannedReply}`;
+        historyEl.appendChild(botBubble);
+
+        inputEl.value = '';
+        historyEl.scrollTop = historyEl.scrollHeight;
+    };
+
+    document.getElementById('species-select')?.addEventListener('change', updateSpecies);
+    document.getElementById('btn-cruzamento')?.addEventListener('click', runCruzamento);
+    document.getElementById('btn-identificar')?.addEventListener('click', runIdentification);
+
+    const handleVetChat = async () => {
+        const inputEl = document.getElementById('vet-input');
+        const historyEl = document.getElementById('vet-chat-history');
+        const sendBtn = document.getElementById('btn-send-vet');
+        if (!inputEl || !historyEl) return;
+        const text = inputEl.value.trim();
+        if (!text) return;
+
+        const userBubble = document.createElement('div');
+        userBubble.className = 'chat-msg-bubble chat-msg-user';
+        userBubble.innerText = text;
+        historyEl.appendChild(userBubble);
+        inputEl.value = '';
+
+        const thinkingBubble = document.createElement('div');
+        thinkingBubble.className = 'chat-msg-bubble chat-msg-ai';
+        thinkingBubble.innerText = '🏥 Vet Agent Pro: Analisando...';
+        historyEl.appendChild(thinkingBubble);
+        historyEl.scrollTop = historyEl.scrollHeight;
+
+        if (sendBtn) sendBtn.disabled = true;
+        try {
+            const response = await fetch('/api/jarvis/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: text, persona: 'vet', useLivros: true })
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.ok) {
+                thinkingBubble.innerText = `🏥 Vet Agent Pro: ${data?.error || 'Não consegui responder agora. Verifique a configuração da IA (OPENAI_API_KEY) e tente novamente.'}`;
+            } else {
+                let replyText = data.reply || 'Não consegui gerar uma resposta.';
+                if (Array.isArray(data.evidence) && data.evidence.length) {
+                    const refs = data.evidence.map((item) => `- ${item.file}`).join('\n');
+                    replyText += `\n\nFontes consultadas:\n${refs}`;
+                }
+                thinkingBubble.innerText = `🏥 Vet Agent Pro: ${replyText}`;
+            }
+        } catch (error) {
+            thinkingBubble.innerText = '🏥 Vet Agent Pro: Falha de conexão com a IA. Verifique se o servidor está rodando.';
+        } finally {
+            if (sendBtn) sendBtn.disabled = false;
+            historyEl.scrollTop = historyEl.scrollHeight;
+        }
+    };
+
+    document.getElementById('btn-send-vet')?.addEventListener('click', handleVetChat);
+    document.getElementById('vet-input')?.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') handleVetChat();
     });
 
     document.getElementById('mkt-select-ave')?.addEventListener('change', (e) => {
@@ -4996,7 +5107,7 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
         generateMarketingAd(ave);
     });
 
-    document.getElementById('btn-add-financa').addEventListener('click', () => { document.getElementById('modal-add-financa').style.display = 'block'; });
+    document.getElementById('btn-add-financa')?.addEventListener('click', () => { document.getElementById('modal-add-financa').style.display = 'block'; });
     
     const fetchNfeList = async () => {
         const tbody = document.getElementById('nfe-table-body');
@@ -5168,15 +5279,18 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
     };
     document.getElementById('btn-save-admin')?.addEventListener('click', window.handleSaveAdmin);
 
-    document.getElementById('tutor-input').addEventListener('keypress', (event) => {
+    document.getElementById('tutor-input')?.addEventListener('keypress', (event) => {
         if (event.key === 'Enter') handleChat('tutor-input', 'tutor-chat-history', 'Tutor Academia', 'Conceito importante: a herança ligada ao sexo em psitacídeos segue o padrão ZW. Fêmeas expressam mutações ligadas ao sexo com apenas um alelo.');
     });
+    document.getElementById('btn-send-tutor')?.addEventListener('click', () => handleChat('tutor-input', 'tutor-chat-history', 'Tutor Academia', 'Conceito importante: a herança ligada ao sexo em psitacídeos segue o padrão ZW. Fêmeas expressam mutações ligadas ao sexo com apenas um alelo.'));
 
-    document.getElementById('btn-close-reader').addEventListener('click', () => { document.getElementById('modal-book-reader').style.display = 'none'; });
-    document.getElementById('btn-use-vet').addEventListener('click', () => {
+    document.getElementById('btn-close-reader')?.addEventListener('click', () => { document.getElementById('modal-book-reader').style.display = 'none'; });
+    document.getElementById('btn-use-vet')?.addEventListener('click', () => {
         document.getElementById('modal-book-reader').style.display = 'none';
         goToModule('vet');
-        document.getElementById('vet-input').value = `Analisando com base no livro: ${document.getElementById('book-title').innerText}`;
+        const vetInputEl = document.getElementById('vet-input');
+        const bookTitleEl = document.getElementById('book-title');
+        if (vetInputEl) vetInputEl.value = `Analisando com base no livro: ${bookTitleEl?.innerText || ''}`;
     });
 
     updateSpecies();
