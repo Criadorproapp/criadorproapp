@@ -4711,8 +4711,75 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         }
     };
 
+    const isPasswordRecoveryLink = () => /type=recovery/.test(window.location.hash);
+
+    const showRecoveryForm = () => {
+        const loginOverlayEl = document.getElementById('loginOverlay');
+        if (loginOverlayEl) loginOverlayEl.style.display = 'flex';
+        const loginFields = document.getElementById('form-login-fields');
+        const signupFields = document.getElementById('form-signup-fields');
+        const recoveryFields = document.getElementById('form-recovery-fields');
+        const btnDoLogin = document.getElementById('btn-do-login');
+        const tabsRow = document.getElementById('tab-login')?.parentElement;
+        if (loginFields) loginFields.style.display = 'none';
+        if (signupFields) signupFields.style.display = 'none';
+        if (recoveryFields) recoveryFields.style.display = 'block';
+        if (btnDoLogin) btnDoLogin.style.display = 'none';
+        if (tabsRow) tabsRow.style.display = 'none';
+    };
+
+    window.handleSaveRecoveryPassword = async () => {
+        const newPassword = document.getElementById('recovery-new-password')?.value || '';
+        const confirmPassword = document.getElementById('recovery-confirm-password')?.value || '';
+        const loginErrorEl = document.getElementById('loginError');
+        if (newPassword.length < 6) {
+            if (loginErrorEl) { loginErrorEl.innerText = 'A senha precisa ter pelo menos 6 caracteres.'; loginErrorEl.style.display = 'block'; }
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            if (loginErrorEl) { loginErrorEl.innerText = 'As senhas não coincidem.'; loginErrorEl.style.display = 'block'; }
+            return;
+        }
+        if (!supabase) return;
+        try {
+            const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+            if (error) throw error;
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+            alert('🎉 Senha atualizada com sucesso! Você já está logado.');
+            const { data: sessionData } = await supabase.auth.getSession();
+            await finishLogin(sessionData.session);
+        } catch (error) {
+            if (loginErrorEl) { loginErrorEl.innerText = error.message || 'Falha ao atualizar a senha.'; loginErrorEl.style.display = 'block'; }
+        }
+    };
+    document.getElementById('btn-save-recovery-password')?.addEventListener('click', window.handleSaveRecoveryPassword);
+
+    document.getElementById('link-esqueci-senha')?.addEventListener('click', async (event) => {
+        event.preventDefault();
+        const email = document.getElementById('login-email')?.value.trim();
+        const loginErrorEl = document.getElementById('loginError');
+        if (!email) {
+            if (loginErrorEl) { loginErrorEl.innerText = 'Digite seu e-mail no campo acima primeiro, depois clique em "Esqueci minha senha".'; loginErrorEl.style.display = 'block'; }
+            return;
+        }
+        if (!supabase) return;
+        try {
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + window.location.pathname
+            });
+            if (error) throw error;
+            alert(`📧 Enviamos um e-mail de recuperação para ${email}. Clique no link recebido para definir uma nova senha.`);
+        } catch (error) {
+            if (loginErrorEl) { loginErrorEl.innerText = error.message || 'Falha ao enviar e-mail de recuperação.'; loginErrorEl.style.display = 'block'; }
+        }
+    });
+
     (async () => {
         try {
+            if (isPasswordRecoveryLink()) {
+                showRecoveryForm();
+                return;
+            }
             if (supabase) {
                 const { data: { session } } = await supabase.auth.getSession();
                 if (session) await finishLogin(session);
