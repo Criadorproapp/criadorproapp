@@ -1086,8 +1086,11 @@
                 </div>
 
                 <div class="glass-card" style="margin-bottom:1.5rem;">
-                    <h3 style="margin-bottom:1rem;">Manuais Disponíveis</h3>
-                    <div id="library-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:1rem;"></div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.75rem;">
+                        <h3 style="margin:0;">Livros, Artigos, Vídeos & Cursos</h3>
+                        <input type="text" id="biblioteca-catalogo-busca" class="input-ui" placeholder="Buscar por título ou categoria..." style="max-width:280px;">
+                    </div>
+                    <div id="biblioteca-catalogo-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:1rem;"></div>
                 </div>
 
                 <div class="glass-card chat-window-card">
@@ -1335,6 +1338,29 @@
                         </table>
                     </div>
                 </div>
+
+                <div class="glass-card" style="margin-top:1.5rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.75rem;">
+                        <h3 style="font-family:'Outfit',sans-serif;">📚 Gerenciar Biblioteca (Livros, Vídeos & Cursos)</h3>
+                        <button class="btn-ui btn-ui-primary" id="btn-add-biblioteca-item">+ Novo Conteúdo</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="ui-data-table" id="master-biblioteca-table">
+                            <thead><tr><th>Capa</th><th>Título</th><th>Tipo</th><th>Preço</th><th>Ações</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="glass-card" style="margin-top:1.5rem;">
+                    <h3 style="font-family:'Outfit',sans-serif; margin-bottom:1.25rem;">🔓 Solicitações de Acesso Pendentes</h3>
+                    <div class="table-responsive">
+                        <table class="ui-data-table" id="master-acessos-pendentes-table">
+                            <thead><tr><th>Criador</th><th>Conteúdo</th><th>Solicitado em</th><th>Ações</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
             </section>
 
         </main>
@@ -1342,6 +1368,73 @@
 </div>
 
 <!-- MODALS -->
+<!-- MODAL: ADD/EDIT CONTEÚDO DA BIBLIOTECA (ADMIN) -->
+<div id="modal-add-biblioteca" class="modal-backdrop-ui">
+    <div class="modal-dialog-card" style="max-width:680px;">
+        <div class="modal-title-row">
+            <h2 id="biblioteca-modal-title" style="font-family:'Outfit',sans-serif;">Novo Conteúdo</h2>
+            <button class="btn-close-modal" onclick="closeModal('modal-add-biblioteca')">✕</button>
+        </div>
+        <input type="hidden" id="biblioteca-item-id">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group-ui">
+                <label>Tipo</label>
+                <select id="biblioteca-tipo" class="input-ui">
+                    <option value="livro">Livro</option>
+                    <option value="artigo">Artigo</option>
+                    <option value="ebook">Ebook</option>
+                    <option value="video">Vídeo</option>
+                    <option value="live">Live</option>
+                    <option value="curso">Curso</option>
+                </select>
+            </div>
+            <div class="form-group-ui">
+                <label>Categoria</label>
+                <input type="text" id="biblioteca-categoria" class="input-ui" placeholder="Ex: Genética, Manejo...">
+            </div>
+            <div class="form-group-ui" style="grid-column:1 / -1;">
+                <label>Título *</label>
+                <input type="text" id="biblioteca-titulo" class="input-ui" placeholder="Título do conteúdo">
+            </div>
+            <div class="form-group-ui" style="grid-column:1 / -1;">
+                <label>Descrição</label>
+                <input type="text" id="biblioteca-descricao" class="input-ui" placeholder="Breve descrição">
+            </div>
+            <div class="form-group-ui">
+                <label>Autor</label>
+                <input type="text" id="biblioteca-autor" class="input-ui" placeholder="Nome do autor">
+            </div>
+            <div class="form-group-ui">
+                <label>URL da Capa (imagem)</label>
+                <input type="text" id="biblioteca-capa-url" class="input-ui" placeholder="https://...">
+            </div>
+            <div class="form-group-ui">
+                <label>É pago?</label>
+                <select id="biblioteca-is-pago" class="input-ui">
+                    <option value="false">Gratuito</option>
+                    <option value="true">Pago</option>
+                </select>
+            </div>
+            <div class="form-group-ui">
+                <label>Preço (R$)</label>
+                <input type="number" id="biblioteca-preco" class="input-ui" placeholder="0.00">
+            </div>
+            <div class="form-group-ui" style="grid-column:1 / -1;">
+                <label>Link de Pagamento (checkout — só se for pago)</label>
+                <input type="text" id="biblioteca-link-pagamento" class="input-ui" placeholder="Link do Stripe / Mercado Pago / PIX...">
+            </div>
+            <div class="form-group-ui" style="grid-column:1 / -1;">
+                <label>Link de Acesso (arquivo/PDF ou YouTube/plataforma) *</label>
+                <input type="text" id="biblioteca-link-acesso" class="input-ui" placeholder="URL do conteúdo real">
+            </div>
+        </div>
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+            <button class="btn-ui btn-ui-primary" id="btn-save-biblioteca-item" style="flex:1;">💾 Salvar</button>
+            <button class="btn-ui btn-ui-secondary" onclick="closeModal('modal-add-biblioteca')" style="flex:1;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL: LEITOR DE LIVRO -->
 <div id="modal-book-reader" class="modal-backdrop-ui">
     <div class="modal-dialog-card" style="max-width:640px;">

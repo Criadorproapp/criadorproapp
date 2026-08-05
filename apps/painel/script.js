@@ -4179,6 +4179,256 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         }
     ];
 
+    // ============================================================
+    // BIBLIOTECA PAGA: catálogo (livros/artigos/ebooks/vídeos/lives/cursos)
+    // ============================================================
+    let bibliotecaCatalogoCache = [];
+
+    const tipoLabelBiblioteca = (tipo) => ({
+        livro: '📘 Livro', artigo: '📄 Artigo', ebook: '📱 Ebook',
+        video: '🎬 Vídeo', live: '🔴 Live', curso: '🎓 Curso'
+    }[tipo] || tipo);
+
+    const loadBibliotecaCatalogo = async () => {
+        if (!supabase) return;
+        try {
+            const { data, error } = await supabase.rpc('get_biblioteca_itens');
+            if (error) throw error;
+            bibliotecaCatalogoCache = Array.isArray(data) ? data : [];
+        } catch (error) {
+            console.error('Não foi possível carregar a biblioteca.', error);
+            bibliotecaCatalogoCache = [];
+        }
+        renderBibliotecaCatalogo();
+        renderMasterBibliotecaTable();
+        renderAcessosPendentes();
+    };
+
+    const renderBibliotecaCatalogo = () => {
+        const grid = document.getElementById('biblioteca-catalogo-grid');
+        if (!grid) return;
+        const query = (document.getElementById('biblioteca-catalogo-busca')?.value || '').trim().toLowerCase();
+        const itens = bibliotecaCatalogoCache.filter((item) =>
+            `${item.titulo} ${item.categoria || ''}`.toLowerCase().includes(query)
+        );
+
+        if (!itens.length) {
+            grid.innerHTML = '<p class="text-muted">Nenhum conteúdo disponível ainda. Fale com o administrador.</p>';
+            return;
+        }
+
+        grid.innerHTML = itens.map((item) => {
+            const capa = sanitizeImageUrl(item.capa_url) || '';
+            const capaHtml = capa
+                ? `<img src="${escapeHtml(capa)}" alt="${escapeHtml(item.titulo)}" style="width:100%; height:130px; object-fit:cover; border-radius:10px;">`
+                : `<div style="width:100%; height:130px; border-radius:10px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-size:2rem;">${item.tipo === 'video' || item.tipo === 'live' || item.tipo === 'curso' ? '🎬' : '📘'}</div>`;
+
+            let actionHtml;
+            if (!item.is_pago || item.link_acesso) {
+                actionHtml = `<a class="btn-ui btn-ui-primary" href="${escapeHtml(item.link_acesso || '#')}" target="_blank" rel="noopener noreferrer" style="width:100%; text-align:center; display:block;">${item.tipo === 'video' || item.tipo === 'live' || item.tipo === 'curso' ? '▶️ Assistir' : '📥 Acessar'}</a>`;
+            } else if (item.meu_status === 'pendente') {
+                actionHtml = `<button class="btn-ui btn-ui-secondary" disabled style="width:100%;">⏳ Aguardando liberação</button>`;
+            } else {
+                actionHtml = `
+                    <a class="btn-ui btn-ui-primary" href="${escapeHtml(item.link_pagamento || '#')}" target="_blank" rel="noopener noreferrer" style="width:100%; text-align:center; display:block; margin-bottom:0.4rem;">💳 Comprar (${formatCurrency(item.preco || 0)})</a>
+                    <button class="btn-ui btn-ui-secondary btn-ja-paguei" data-id="${escapeHtml(item.id)}" style="width:100%;">Já paguei, liberar acesso</button>
+                `;
+            }
+
+            return `
+                <div class="glass-card" style="padding:0.85rem; display:flex; flex-direction:column; gap:0.5rem;">
+                    ${capaHtml}
+                    <span class="badge-pill badge-cyan" style="align-self:flex-start;">${tipoLabelBiblioteca(item.tipo)}</span>
+                    <strong style="font-size:0.95rem;">${escapeHtml(item.titulo)}</strong>
+                    ${item.autor ? `<small class="text-muted">Por ${escapeHtml(item.autor)}</small>` : ''}
+                    ${item.descricao ? `<p class="small text-muted" style="margin:0;">${escapeHtml(item.descricao)}</p>` : ''}
+                    <div style="margin-top:auto;">${actionHtml}</div>
+                </div>
+            `;
+        }).join('');
+
+        grid.querySelectorAll('.btn-ja-paguei').forEach((btn) => {
+            btn.addEventListener('click', () => solicitarAcessoBiblioteca(btn.getAttribute('data-id')));
+        });
+    };
+
+    const solicitarAcessoBiblioteca = async (itemId) => {
+        if (!supabase || !DB.session?.user?.id) {
+            alert('Você precisa estar logado para solicitar acesso.');
+            return;
+        }
+        try {
+            const { error } = await supabase.from('biblioteca_acessos').upsert({
+                item_id: itemId,
+                user_id: DB.session.user.id,
+                status: 'pendente'
+            }, { onConflict: 'item_id,user_id' });
+            if (error) throw error;
+            alert('✅ Solicitação enviada! O administrador vai liberar o acesso após confirmar o pagamento.');
+            await loadBibliotecaCatalogo();
+        } catch (error) {
+            alert('Não foi possível enviar a solicitação: ' + (error.message || 'erro desconhecido.'));
+        }
+    };
+
+    document.getElementById('biblioteca-catalogo-busca')?.addEventListener('input', renderBibliotecaCatalogo);
+
+    // --- Painel Master: gerenciar itens da biblioteca ---
+    const renderMasterBibliotecaTable = () => {
+        const tbody = document.querySelector('#master-biblioteca-table tbody');
+        if (!tbody || !isMasterAdmin) return;
+
+        if (!bibliotecaCatalogoCache.length) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-muted">Nenhum conteúdo cadastrado ainda.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = bibliotecaCatalogoCache.map((item) => {
+            const capa = sanitizeImageUrl(item.capa_url);
+            return `
+                <tr>
+                    <td>${capa ? `<img src="${escapeHtml(capa)}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;">` : '—'}</td>
+                    <td><strong>${escapeHtml(item.titulo)}</strong>${item.categoria ? `<br><small class="text-muted">${escapeHtml(item.categoria)}</small>` : ''}</td>
+                    <td>${tipoLabelBiblioteca(item.tipo)}</td>
+                    <td>${item.is_pago ? formatCurrency(item.preco || 0) : 'Gratuito'}</td>
+                    <td>
+                        <button class="btn-ui btn-ui-secondary btn-edit-biblioteca" data-id="${escapeHtml(item.id)}" style="padding:0.3rem 0.6rem; font-size:0.75rem;">✏️</button>
+                        <button class="btn-ui btn-ui-secondary btn-delete-biblioteca" data-id="${escapeHtml(item.id)}" style="padding:0.3rem 0.6rem; font-size:0.75rem; color:#f43f5e;">❌</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        tbody.querySelectorAll('.btn-edit-biblioteca').forEach((btn) => {
+            btn.addEventListener('click', () => openBibliotecaModal(btn.getAttribute('data-id')));
+        });
+        tbody.querySelectorAll('.btn-delete-biblioteca').forEach((btn) => {
+            btn.addEventListener('click', async () => {
+                if (!confirm('Remover este conteúdo da biblioteca?')) return;
+                const id = btn.getAttribute('data-id');
+                try {
+                    const { error } = await supabase.from('biblioteca_itens').delete().eq('id', id);
+                    if (error) throw error;
+                    await loadBibliotecaCatalogo();
+                } catch (error) {
+                    alert('Erro ao remover: ' + (error.message || ''));
+                }
+            });
+        });
+    };
+
+    const openBibliotecaModal = (itemId) => {
+        const item = itemId ? bibliotecaCatalogoCache.find((i) => i.id === itemId) : null;
+        document.getElementById('biblioteca-modal-title').textContent = item ? 'Editar Conteúdo' : 'Novo Conteúdo';
+        document.getElementById('biblioteca-item-id').value = item?.id || '';
+        document.getElementById('biblioteca-tipo').value = item?.tipo || 'livro';
+        document.getElementById('biblioteca-categoria').value = item?.categoria || '';
+        document.getElementById('biblioteca-titulo').value = item?.titulo || '';
+        document.getElementById('biblioteca-descricao').value = item?.descricao || '';
+        document.getElementById('biblioteca-autor').value = item?.autor || '';
+        document.getElementById('biblioteca-capa-url').value = item?.capa_url || '';
+        document.getElementById('biblioteca-is-pago').value = String(Boolean(item?.is_pago));
+        document.getElementById('biblioteca-preco').value = item?.preco || '';
+        document.getElementById('biblioteca-link-pagamento').value = item?.link_pagamento || '';
+        document.getElementById('biblioteca-link-acesso').value = item?.link_acesso || '';
+        if (typeof openModal === 'function') openModal('modal-add-biblioteca');
+        else document.getElementById('modal-add-biblioteca').style.display = 'flex';
+    };
+
+    document.getElementById('btn-add-biblioteca-item')?.addEventListener('click', () => openBibliotecaModal(null));
+
+    window.handleSaveBibliotecaItem = async () => {
+        if (!supabase) { alert('Conexão com o banco indisponível.'); return; }
+        const id = document.getElementById('biblioteca-item-id').value;
+        const titulo = document.getElementById('biblioteca-titulo').value.trim();
+        const linkAcesso = document.getElementById('biblioteca-link-acesso').value.trim();
+        if (!titulo || !linkAcesso) {
+            alert('Preencha ao menos o Título e o Link de Acesso.');
+            return;
+        }
+        const payload = {
+            tipo: document.getElementById('biblioteca-tipo').value,
+            categoria: document.getElementById('biblioteca-categoria').value.trim(),
+            titulo,
+            descricao: document.getElementById('biblioteca-descricao').value.trim(),
+            autor: document.getElementById('biblioteca-autor').value.trim(),
+            capa_url: sanitizeImageUrl(document.getElementById('biblioteca-capa-url').value.trim()),
+            is_pago: document.getElementById('biblioteca-is-pago').value === 'true',
+            preco: Number(document.getElementById('biblioteca-preco').value) || 0,
+            link_pagamento: document.getElementById('biblioteca-link-pagamento').value.trim(),
+            link_acesso: linkAcesso,
+            updated_at: new Date().toISOString()
+        };
+        try {
+            let error;
+            if (id) {
+                ({ error } = await supabase.from('biblioteca_itens').update(payload).eq('id', id));
+            } else {
+                ({ error } = await supabase.from('biblioteca_itens').insert([{ ...payload, created_by: DB.session?.user?.id }]));
+            }
+            if (error) throw error;
+            if (typeof closeModal === 'function') closeModal('modal-add-biblioteca');
+            await loadBibliotecaCatalogo();
+            alert('🎉 Conteúdo salvo com sucesso!');
+        } catch (error) {
+            alert('Erro ao salvar: ' + (error.message || 'erro desconhecido.'));
+        }
+    };
+    document.getElementById('btn-save-biblioteca-item')?.addEventListener('click', window.handleSaveBibliotecaItem);
+
+    // --- Painel Master: aprovar/rejeitar solicitações de acesso pago ---
+    const renderAcessosPendentes = async () => {
+        const tbody = document.querySelector('#master-acessos-pendentes-table tbody');
+        if (!tbody || !isMasterAdmin || !supabase) return;
+        try {
+            const { data, error } = await supabase
+                .from('biblioteca_acessos')
+                .select('id, item_id, user_id, status, solicitado_em, biblioteca_itens(titulo)')
+                .eq('status', 'pendente')
+                .order('solicitado_em', { ascending: false });
+            if (error) throw error;
+            const pendentes = Array.isArray(data) ? data : [];
+            if (!pendentes.length) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-muted">Nenhuma solicitação pendente.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = pendentes.map((acesso) => `
+                <tr>
+                    <td><code style="font-size:0.75rem;">${escapeHtml(acesso.user_id)}</code></td>
+                    <td>${escapeHtml(acesso.biblioteca_itens?.titulo || acesso.item_id)}</td>
+                    <td>${formatDateBr(String(acesso.solicitado_em).split('T')[0])}</td>
+                    <td>
+                        <button class="btn-ui btn-ui-primary btn-aprovar-acesso" data-id="${escapeHtml(acesso.id)}" style="padding:0.3rem 0.6rem; font-size:0.75rem;">✓ Liberar</button>
+                        <button class="btn-ui btn-ui-secondary btn-rejeitar-acesso" data-id="${escapeHtml(acesso.id)}" style="padding:0.3rem 0.6rem; font-size:0.75rem;">✕ Rejeitar</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            tbody.querySelectorAll('.btn-aprovar-acesso').forEach((btn) => {
+                btn.addEventListener('click', () => responderAcessoBiblioteca(btn.getAttribute('data-id'), 'liberado'));
+            });
+            tbody.querySelectorAll('.btn-rejeitar-acesso').forEach((btn) => {
+                btn.addEventListener('click', () => responderAcessoBiblioteca(btn.getAttribute('data-id'), 'rejeitado'));
+            });
+        } catch (error) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-muted">Falha ao carregar solicitações.</td></tr>';
+        }
+    };
+
+    const responderAcessoBiblioteca = async (acessoId, status) => {
+        try {
+            const { error } = await supabase.from('biblioteca_acessos').update({
+                status,
+                respondido_em: new Date().toISOString(),
+                respondido_por: DB.session?.user?.id
+            }).eq('id', acessoId);
+            if (error) throw error;
+            await renderAcessosPendentes();
+        } catch (error) {
+            alert('Erro ao responder solicitação: ' + (error.message || ''));
+        }
+    };
+
     const renderMasterAdminPanel = () => {
         const tbody = document.getElementById('master-clients-table-body');
         if (!tbody) return;
@@ -4366,6 +4616,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
             renderRecintos();
             renderFinanceiro();
             if (isMasterAdmin) renderMasterAdminPanel();
+            await loadBibliotecaCatalogo();
         }
         if (pendingRouteModule) goToModule(pendingRouteModule);
         if (pendingRouteRecinto) {
