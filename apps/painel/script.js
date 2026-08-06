@@ -76,6 +76,8 @@ function __initPainel() {
     let isSignupMode = false;
     let selectedRecintoId = null;
     let selectedAveId = null;
+    let supportModeTargetUserId = null;
+    const effectiveUserId = () => supportModeTargetUserId || DB.session?.user?.id || null;
     const routeParams = new URLSearchParams(window.location.search);
     const pendingRouteModule = routeParams.get('module');
     const pendingRouteRecinto = routeParams.get('recinto');
@@ -450,7 +452,8 @@ function __initPainel() {
 
         async syncWithCloud() {
             if (!supabase || !this.session?.user?.id) return;
-            const userId = this.session.user.id;
+            const userId = effectiveUserId();
+            if (!userId) return;
             try {
                 const [avesResp, recintosResp, financasResp, perfilResp] = await Promise.all([
                     supabase.from('aves').select('*').eq('user_id', userId),
@@ -497,10 +500,11 @@ function __initPainel() {
             this.saveConfig();
             this.applyProfile();
 
-            if (supabase && this.session?.user?.id) {
+            const userId = effectiveUserId();
+            if (supabase && userId) {
                 try {
                     await supabase.from('perfil_criatorio').upsert({
-                        user_id: this.session.user.id,
+                        user_id: userId,
                         ...this.perfil,
                         updated_at: new Date().toISOString()
                     });
@@ -515,7 +519,8 @@ function __initPainel() {
             this.aves.push(localAve);
             this.saveAves();
 
-            if (supabase && this.session?.user?.id) {
+            const userId = effectiveUserId();
+            if (supabase && userId) {
                 try {
                     await supabase.from('aves').insert([{
                         anilha: localAve.anilha,
@@ -526,7 +531,7 @@ function __initPainel() {
                         status: localAve.status,
                         nascimento: localAve.nascimento || null,
                         recinto_id: localAve.recinto || null,
-                        user_id: this.session.user.id
+                        user_id: userId
                     }]);
                     await this.syncWithCloud();
                 } catch (error) {
@@ -542,9 +547,10 @@ function __initPainel() {
             this.saveAves();
             removeAveDossier(id);
 
-            if (supabase && this.session?.user?.id && ave?.anilha) {
+            const userId = effectiveUserId();
+            if (supabase && userId && ave?.anilha) {
                 try {
-                    await supabase.from('aves').delete().eq('user_id', this.session.user.id).eq('anilha', ave.anilha);
+                    await supabase.from('aves').delete().eq('user_id', userId).eq('anilha', ave.anilha);
                 } catch (error) {
                     console.error('Não foi possível remover a ave na nuvem.', error);
                 }
@@ -555,26 +561,81 @@ function __initPainel() {
             const localRecinto = normalizeRecinto({ id: createId('REC'), ...recinto });
             this.recintos.push(localRecinto);
             this.saveRecintos();
+
+            const userId = effectiveUserId();
+            if (supabase && userId) {
+                try {
+                    await supabase.from('recintos').insert([{
+                        nome: localRecinto.nome,
+                        ala: localRecinto.ala,
+                        tipo_comp: localRecinto.tipo_comp,
+                        qtd_comp: localRecinto.qtd_comp,
+                        dimensoes: localRecinto.dimensoes,
+                        anilha_casal: localRecinto.anilha_casal,
+                        descricao: localRecinto.descricao,
+                        user_id: userId
+                    }]);
+                    await this.syncWithCloud();
+                } catch (error) {
+                    console.error('Não foi possível sincronizar o recinto com a nuvem.', error);
+                }
+            }
             return localRecinto;
         }
 
         async removeRecinto(id) {
+            const recinto = this.recintos.find((item) => item.id === id);
             this.recintos = this.recintos.filter((item) => item.id !== id);
             this.aves = this.aves.map((ave) => ave.recinto === id ? { ...ave, recinto: '' } : ave);
             this.saveRecintos();
             this.saveAves();
+
+            const userId = effectiveUserId();
+            if (supabase && userId && recinto?.nome) {
+                try {
+                    await supabase.from('recintos').delete().eq('user_id', userId).eq('nome', recinto.nome);
+                } catch (error) {
+                    console.error('Não foi possível remover o recinto na nuvem.', error);
+                }
+            }
         }
 
         async addFinanca(financa) {
             const localFinanca = normalizeFinanca({ id: createId('FIN'), ...financa });
             this.financas.push(localFinanca);
             this.saveFinancas();
+
+            const userId = effectiveUserId();
+            if (supabase && userId) {
+                try {
+                    await supabase.from('financas').insert([{
+                        tipo: localFinanca.tipo,
+                        descricao: localFinanca.descricao,
+                        valor: localFinanca.valor,
+                        data: localFinanca.data || null,
+                        user_id: userId
+                    }]);
+                    await this.syncWithCloud();
+                } catch (error) {
+                    console.error('Não foi possível sincronizar o lançamento com a nuvem.', error);
+                }
+            }
             return localFinanca;
         }
 
         async removeFinanca(id) {
+            const financa = this.financas.find((item) => item.id === id);
             this.financas = this.financas.filter((item) => item.id !== id);
             this.saveFinancas();
+
+            const userId = effectiveUserId();
+            if (supabase && userId && financa?.id) {
+                try {
+                    await supabase.from('financas').delete().eq('user_id', userId).eq('descricao', financa.descricao).eq('valor', financa.valor);
+                } catch (error) {
+                    console.error('Não foi possível remover o lançamento na nuvem.', error);
+                }
+            }
         }
 
         async addOvo(ovoData) {
@@ -4134,50 +4195,20 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
     let isSupportModeActive = false;
     let originalMasterPerfil = null;
 
-    DB.clientesMaster = [
-        {
-            id: 'cli-001',
-            nome: 'João Silva',
-            criatorio: 'Criatório Sol Nascente',
-            email: 'joao@solnascente.com.br',
-            whatsapp: '(11) 98877-6655',
-            documento: '111.222.333-44',
-            ie: '123.456.789.110',
-            certStatus: 'Vinculado',
-            certVencimento: '2027-12-31',
-            dataCadastro: '2026-07-15',
-            status: 'Ativo',
-            nfeCount: 12
-        },
-        {
-            id: 'cli-002',
-            nome: 'Maria Souza',
-            criatorio: 'Criadouro Pássaro de Ouro',
-            email: 'maria@passarodeouro.com.br',
-            whatsapp: '(31) 97766-5544',
-            documento: '222.333.444-55',
-            ie: '987.654.321.000',
-            certStatus: 'Pendente',
-            certVencimento: '—',
-            dataCadastro: '2026-07-20',
-            status: 'Ativo',
-            nfeCount: 0
-        },
-        {
-            id: 'cli-003',
-            nome: 'Carlos Oliveira',
-            criatorio: 'Criatório Vale Verde',
-            email: 'carlos@valeverde.com.br',
-            whatsapp: '(19) 99112-2334',
-            documento: '333.444.555-66',
-            ie: '456.789.123.444',
-            certStatus: 'Vinculado',
-            certVencimento: '2027-08-15',
-            dataCadastro: '2026-07-25',
-            status: 'Ativo',
-            nfeCount: 5
+    let masterClientesCache = [];
+
+    const loadMasterClientes = async () => {
+        if (!supabase || !isMasterAdmin) return;
+        try {
+            const { data, error } = await supabase.rpc('get_all_criadores');
+            if (error) throw error;
+            masterClientesCache = Array.isArray(data) ? data : [];
+        } catch (error) {
+            console.error('Não foi possível carregar a lista de criadores.', error);
+            masterClientesCache = [];
         }
-    ];
+        renderMasterAdminPanel();
+    };
 
     // ============================================================
     // BIBLIOTECA PAGA: catálogo (livros/artigos/ebooks/vídeos/lives/cursos)
@@ -4438,34 +4469,35 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         const statCertificados = document.getElementById('master-stat-certificados');
         const statNfe = document.getElementById('master-stat-nfe');
 
-        if (statClientes) statClientes.textContent = String(DB.clientesMaster.length);
-        if (statAtivos) statAtivos.textContent = String(DB.clientesMaster.filter(c => c.status === 'Ativo').length);
-        if (statCertificados) statCertificados.textContent = String(DB.clientesMaster.filter(c => c.certStatus === 'Vinculado').length);
-        if (statNfe) statNfe.textContent = String(DB.clientesMaster.reduce((sum, c) => sum + (c.nfeCount || 0), 0));
+        if (statClientes) statClientes.textContent = String(masterClientesCache.length);
+        if (statAtivos) statAtivos.textContent = String(masterClientesCache.filter(c => c.nome_criatorio).length);
+        if (statCertificados) statCertificados.textContent = String(masterClientesCache.reduce((sum, c) => sum + (c.total_aves || 0), 0));
+        if (statNfe) statNfe.textContent = String(masterClientesCache.reduce((sum, c) => sum + (c.total_recintos || 0), 0));
+
+        if (!masterClientesCache.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-muted">Nenhum criador cadastrado ainda.</td></tr>';
+            return;
+        }
 
         const searchVal = (document.getElementById('master-search-cliente')?.value || '').toLowerCase();
-        const filtered = DB.clientesMaster.filter(c => 
-            c.nome.toLowerCase().includes(searchVal) ||
-            c.criatorio.toLowerCase().includes(searchVal) ||
-            c.email.toLowerCase().includes(searchVal) ||
-            c.documento.includes(searchVal)
+        const filtered = masterClientesCache.filter(c =>
+            (c.nome_criatorio || '').toLowerCase().includes(searchVal) ||
+            (c.responsavel || '').toLowerCase().includes(searchVal) ||
+            (c.email || '').toLowerCase().includes(searchVal) ||
+            (c.documento || '').includes(searchVal)
         );
 
         tbody.innerHTML = filtered.map(cli => `
             <tr>
-                <td><strong>${escapeHtml(cli.criatorio)}</strong><br><small style="color:var(--text-muted);">${escapeHtml(cli.nome)}</small></td>
-                <td>${escapeHtml(cli.email)}<br><small style="color:var(--text-muted);">${escapeHtml(cli.whatsapp)}</small></td>
-                <td><code>${escapeHtml(cli.documento)}</code><br><small style="color:var(--text-muted);">IE: ${escapeHtml(cli.ie || 'Pendente')}</small></td>
-                <td>
-                    <span class="badge" style="background:${cli.certStatus === 'Vinculado' ? '#10b981' : '#f59e0b'}; color:#fff; padding:3px 8px; border-radius:4px; font-weight:700; font-size:0.75rem;">
-                        ${cli.certStatus === 'Vinculado' ? '✓ Vinculado' : '⚠️ Pendente'}
-                    </span>
-                </td>
-                <td>${escapeHtml(cli.dataCadastro)}</td>
-                <td><span style="color:#10b981; font-weight:700;">● ${escapeHtml(cli.status)}</span></td>
+                <td><strong>${escapeHtml(cli.nome_criatorio || 'Sem nome de criatório')}</strong><br><small style="color:var(--text-muted);">${escapeHtml(cli.responsavel || '—')}</small></td>
+                <td>${escapeHtml(cli.email || '—')}</td>
+                <td><code>${escapeHtml(cli.documento || 'Não informado')}</code></td>
+                <td>${cli.total_aves || 0} ave(s) / ${cli.total_recintos || 0} recinto(s)</td>
+                <td>${cli.updated_at ? escapeHtml(formatDateBr(String(cli.updated_at).split('T')[0])) : '—'}</td>
+                <td>${cli.is_admin ? '<span style="color:#fbbf24; font-weight:700;">🛡️ Admin</span>' : '<span style="color:#10b981; font-weight:700;">● Ativo</span>'}</td>
                 <td>
                     <div style="display:flex; gap:0.4rem;">
-                        <button class="btn-ui btn-ui-amber btn-master-suporte" data-cli-id="${escapeHtml(cli.id)}" style="padding:0.35rem 0.65rem; font-size:0.78rem; font-weight:700;">🎧 Acessar (Suporte)</button>
+                        <button class="btn-ui btn-ui-amber btn-master-suporte" data-cli-id="${escapeHtml(cli.user_id)}" style="padding:0.35rem 0.65rem; font-size:0.78rem; font-weight:700;">🎧 Acessar (Suporte)</button>
                     </div>
                 </td>
             </tr>
@@ -4479,54 +4511,53 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         });
     };
 
-    const suporteAcessarCriador = (clienteId) => {
-        const cliente = DB.clientesMaster.find(c => c.id === clienteId);
-        if (!cliente) return;
+    const suporteAcessarCriador = async (targetUserId) => {
+        const cliente = masterClientesCache.find(c => c.user_id === targetUserId);
+        if (!cliente || !supabase) return;
+        if (targetUserId === DB.session?.user?.id) {
+            alert('Essa é a sua própria conta — não é preciso usar o Modo Suporte.');
+            return;
+        }
+        if (!confirm(`Entrar no Modo Suporte para "${cliente.nome_criatorio || cliente.email}"?\n\nVocê vai ver e poder editar os dados REAIS desse criador (plantel, recintos, financeiro).`)) return;
 
         if (!isSupportModeActive) {
             originalMasterPerfil = { ...DB.perfil };
         }
-
         isSupportModeActive = true;
-        DB.perfil.nome_criatorio = cliente.criatorio;
-        DB.perfil.responsavel = cliente.nome;
-        DB.perfil.documento = cliente.documento;
-        DB.perfil.ie = cliente.ie;
+        supportModeTargetUserId = targetUserId;
+
+        DB.aves = [];
+        DB.recintos = [];
+        DB.financas = [];
+        DB.perfil = {};
+        await DB.syncWithCloud();
 
         const bannerEl = document.getElementById('support-mode-banner');
         const nameEl = document.getElementById('support-mode-criatorio-name');
         if (bannerEl) bannerEl.style.display = 'flex';
-        if (nameEl) nameEl.textContent = `${cliente.criatorio} (${cliente.nome})`;
+        if (nameEl) nameEl.textContent = cliente.nome_criatorio || cliente.email;
 
-        // Atualizar formulário do perfil admin
-        const nameInput = document.getElementById('admin-criatorio-nome');
-        const respInput = document.getElementById('admin-responsavel');
-        const docInput = document.getElementById('admin-doc');
-        const ieInput = document.getElementById('admin-ie');
-
-        if (nameInput) nameInput.value = cliente.criatorio;
-        if (respInput) respInput.value = cliente.nome;
-        if (docInput) docInput.value = cliente.documento;
-        if (ieInput) ieInput.value = cliente.ie || '';
-
-        // Atualizar interface
+        loadProfileToForm();
         renderDashboard();
         renderPlantel();
         renderRecintos();
         renderFinanceiro();
 
-        // Direcionar para a página de configurações "Meu Criatório" para auxílio fiscal
-        goToModule('admin');
-
-        alert(`🎧 MODO SUPORTE ATIVADO!\n\nVocê agora está no ambiente do cliente: ${cliente.criatorio}.\nPode realizar os ajustes de Certificado A1, Inscrição Estadual e Nota Fiscal para ajudá-lo.`);
+        switchModule('dashboard');
+        alert(`🎧 MODO SUPORTE ATIVADO!\n\nVocê está vendo e editando os dados reais de: ${cliente.nome_criatorio || cliente.email}.\nQualquer cadastro (ave, recinto, financeiro, nota fiscal) feito agora é salvo na conta desse criador.`);
     };
 
-    window.sairSuporteModo = () => {
+    window.sairSuporteModo = async () => {
         if (!isSupportModeActive) return;
         isSupportModeActive = false;
-        if (originalMasterPerfil) {
-            DB.perfil = { ...originalMasterPerfil };
-        }
+        supportModeTargetUserId = null;
+
+        DB.aves = [];
+        DB.recintos = [];
+        DB.financas = [];
+        DB.perfil = originalMasterPerfil ? { ...originalMasterPerfil } : {};
+        await DB.syncWithCloud();
+
         const bannerEl = document.getElementById('support-mode-banner');
         if (bannerEl) bannerEl.style.display = 'none';
 
@@ -4536,9 +4567,9 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         renderRecintos();
         renderFinanceiro();
 
-        goToModule('master-admin');
-        renderMasterAdminPanel();
-        alert('✓ Modo Suporte encerrado. Você retornou ao Painel Master Admin.');
+        switchModule('master-admin');
+        await loadMasterClientes();
+        alert('✓ Modo Suporte encerrado. Você retornou ao seu painel.');
     };
 
     window.switchAuthTab = (signupMode) => {
@@ -4615,7 +4646,7 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
             renderPlantel();
             renderRecintos();
             renderFinanceiro();
-            if (isMasterAdmin) renderMasterAdminPanel();
+            if (isMasterAdmin) await loadMasterClientes();
             await loadBibliotecaCatalogo();
         }
         if (pendingRouteModule) goToModule(pendingRouteModule);
