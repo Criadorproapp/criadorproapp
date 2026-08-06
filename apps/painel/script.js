@@ -4801,6 +4801,17 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
     document.getElementById('btn-do-login').addEventListener('click', handleLogin);
     document.getElementById('login-password').addEventListener('keypress', (event) => { if (event.key === 'Enter') handleLogin(); });
 
+    window.handleLogout = async () => {
+        if (!confirm('Deseja realmente sair da sua conta?')) return;
+        try {
+            if (supabase) await supabase.auth.signOut();
+        } catch (error) {
+            console.error('Falha ao encerrar sessão no Supabase:', error);
+        }
+        window.location.href = window.location.pathname;
+    };
+    document.getElementById('btn-logout')?.addEventListener('click', window.handleLogout);
+
     document.getElementById('btn-add-ave')?.addEventListener('click', () => { if (typeof openModal === 'function') openModal('modal-add-ave'); else document.getElementById('modal-add-ave').style.display = 'flex'; });
     document.getElementById('btn-cancel-ave')?.addEventListener('click', () => { if (typeof closeModal === 'function') closeModal('modal-add-ave'); else document.getElementById('modal-add-ave').style.display = 'none'; });
         window.populateModalSelectsAndDates = (modalId) => {
