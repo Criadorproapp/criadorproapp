@@ -4068,7 +4068,11 @@ Espécie: **${escapeHtml(especie)}**${pedigreeInfo}
         setVal('admin-endereco', DB.perfil.endereco || '');
         setVal('admin-foco', DB.perfil.foco_criacao || '');
         setVal('admin-logo-url', DB.perfil.logo_url || '');
+        setVal('admin-ie', DB.perfil.nfe_ie || '');
+        setVal('admin-regime', DB.perfil.nfe_regime || 'Produtor Rural (Simples Nacional)');
+        setVal('admin-ambiente', DB.perfil.nfe_ambiente || 'Homologacao');
         DB.applyProfile();
+        fetchNfeList();
     };
 
     const updateSpecies = () => {
@@ -5469,22 +5473,72 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
 
     document.getElementById('btn-add-financa')?.addEventListener('click', () => { document.getElementById('modal-add-financa').style.display = 'block'; });
     
+    const generateChaveNfe = () => {
+        let res = '352607';
+        for (let i = 0; i < 38; i++) res += Math.floor(Math.random() * 10);
+        return res;
+    };
+
+    const renderDanfeHtml = (nota) => {
+        const perfilNome = DB.perfil?.nome_criatorio || 'CRIADOR PRO';
+        const perfilDoc = DB.perfil?.documento || 'Não informado';
+        const perfilIe = DB.perfil?.nfe_ie || 'Não informado';
+        return `<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><title>DANFE - Nota Fiscal Eletrônica Nº ${nota.numero}</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 20px; background:#fff; color:#000; font-size:12px; }
+    .danfe-box { border: 2px solid #000; padding: 15px; max-width: 800px; margin: 0 auto; }
+    .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 10px; }
+    .header h1 { margin: 0; font-size: 18px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .field-box { border: 1px solid #000; padding: 6px; }
+    .label { font-size: 9px; font-weight: bold; text-transform: uppercase; color: #333; display: block; }
+    .val { font-size: 12px; font-weight: bold; margin-top: 2px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #000; padding: 5px; text-align: left; font-size: 11px; }
+    th { background: #eee; }
+    .badge { background: #22c55e; color: #fff; padding: 3px 8px; font-weight: bold; border-radius: 4px; display: inline-block; }
+</style></head>
+<body><div class="danfe-box">
+    <div class="header">
+        <h1>DANFE — Documento Auxiliar da Nota Fiscal Eletrônica</h1>
+        <p><strong>CRIADOR PRO — EMISSOR DE NOTA FISCAL PRODUTOR RURAL</strong></p>
+        <span class="badge">SEFAZ - AUTORIZADA (SIMULADA)</span>
+    </div>
+    <div class="grid">
+        <div class="field-box"><span class="label">EMITENTE</span><div class="val">${escapeHtml(perfilNome)}</div><div>CNPJ/CPF: ${escapeHtml(perfilDoc)} | IE: ${escapeHtml(perfilIe)}</div></div>
+        <div class="field-box"><span class="label">NÚMERO DA NF-E / SÉRIE</span><div class="val">Nº ${escapeHtml(nota.numero)} — Série ${escapeHtml(nota.serie)}</div><div>Data: ${new Date(nota.data_emissao).toLocaleString('pt-BR')}</div></div>
+    </div>
+    <div class="field-box" style="margin-bottom:10px;"><span class="label">CHAVE DE ACESSO SEFAZ (44 DÍGITOS)</span><div class="val" style="font-family: monospace; font-size: 14px;">${escapeHtml(nota.chave)}</div><div style="font-size:10px; color:#555;">Protocolo de Autorização: ${escapeHtml(nota.protocolo)}</div></div>
+    <div class="field-box" style="margin-bottom:10px;"><span class="label">DESTINATÁRIO / COMPRADOR</span><div class="val">${escapeHtml(nota.comprador_nome)}</div><div>CPF/CNPJ: ${escapeHtml(nota.comprador_doc)} | UF: ${escapeHtml(nota.comprador_uf)}</div></div>
+    <table><thead><tr><th>Código / Anilha</th><th>Descrição</th><th>NCM</th><th>CFOP</th><th>Qtd</th><th>Valor Unit.</th><th>Valor Total</th></tr></thead>
+    <tbody><tr><td>${escapeHtml(nota.animal_anilha)}</td><td>Venda de Animal Vivo — ${escapeHtml(nota.especie)}${nota.gta ? ` (GTA nº ${escapeHtml(nota.gta)})` : ''}</td><td>${escapeHtml(nota.ncm)}</td><td>${escapeHtml(nota.cfop)}</td><td>1 UN</td><td>R$ ${Number(nota.valor).toFixed(2)}</td><td><strong>R$ ${Number(nota.valor).toFixed(2)}</strong></td></tr></tbody></table>
+    <div class="field-box" style="margin-top:10px;"><span class="label">INFORMAÇÕES COMPLEMENTARES</span><div>${escapeHtml(nota.obs || '')}</div><div style="font-size:9px; color:#900; margin-top:6px;">* Documento simulado para fins de teste do sistema — não possui validade fiscal real.</div></div>
+    <div style="margin-top:20px; text-align:center;"><button onclick="window.print()" style="padding:8px 16px; background:#0284c7; color:#fff; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">🖨️ Imprimir / Salvar em PDF</button></div>
+</div></body></html>`;
+    };
+
     const fetchNfeList = async () => {
         const tbody = document.getElementById('nfe-table-body');
         if (!tbody) return;
+        const userId = effectiveUserId();
+        if (!supabase || !userId) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-muted">Faça login para ver suas notas fiscais.</td></tr>';
+            return;
+        }
         try {
-            const resp = await fetch('/api/nfe/lista');
-            const data = await resp.json();
-            if (!data.ok || !Array.isArray(data.notas)) {
+            const { data: notas, error } = await supabase.from('notas_fiscais').select('*').eq('user_id', userId).order('data_emissao', { ascending: false });
+            if (error) throw error;
+            if (!Array.isArray(notas) || !notas.length) {
                 tbody.innerHTML = '<tr><td colspan="8" class="text-muted">Nenhuma nota emitida ainda.</td></tr>';
                 return;
             }
-            tbody.innerHTML = data.notas.map(nota => `
+            tbody.innerHTML = notas.map(nota => `
                 <tr>
                     <td><strong>Nº ${escapeHtml(nota.numero)}</strong><br><small style="color:var(--text-muted); font-size:0.75rem;">Série ${escapeHtml(nota.serie)}</small></td>
-                    <td>${new Date(nota.dataEmissao).toLocaleDateString('pt-BR')} ${new Date(nota.dataEmissao).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</td>
-                    <td><span style="background:rgba(14,165,233,0.15); color:#0ea5e9; padding:3px 8px; border-radius:6px; font-weight:700;">${escapeHtml(nota.animalAnilha)}</span><br><small style="color:var(--text-muted);">${escapeHtml(nota.especie)}</small></td>
-                    <td><strong>${escapeHtml(nota.compradorNome)}</strong><br><small style="color:var(--text-muted);">${escapeHtml(nota.compradorDoc)} (${escapeHtml(nota.compradorUf)})</small></td>
+                    <td>${new Date(nota.data_emissao).toLocaleDateString('pt-BR')} ${new Date(nota.data_emissao).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</td>
+                    <td><span style="background:rgba(14,165,233,0.15); color:#0ea5e9; padding:3px 8px; border-radius:6px; font-weight:700;">${escapeHtml(nota.animal_anilha)}</span><br><small style="color:var(--text-muted);">${escapeHtml(nota.especie)}</small></td>
+                    <td><strong>${escapeHtml(nota.comprador_nome)}</strong><br><small style="color:var(--text-muted);">${escapeHtml(nota.comprador_doc)} (${escapeHtml(nota.comprador_uf)})</small></td>
                     <td style="font-weight:700; color:#2ecc71;">${formatCurrency(nota.valor)}</td>
                     <td>${escapeHtml(nota.gta || 'N/A')}</td>
                     <td><span class="badge" style="background:#22c55e; color:#fff; padding:3px 8px; border-radius:4px; font-weight:bold; font-size:0.78rem;">✓ ${escapeHtml(nota.status)}</span></td>
@@ -5500,7 +5554,10 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
             tbody.querySelectorAll('.btn-open-danfe').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const id = btn.getAttribute('data-nfe-id');
-                    window.open(`/api/nfe/danfe?id=${encodeURIComponent(id)}`, '_blank');
+                    const nota = notas.find((n) => n.id === id);
+                    if (!nota) return;
+                    const win = window.open('', '_blank');
+                    if (win) { win.document.write(renderDanfeHtml(nota)); win.document.close(); }
                 });
             });
 
@@ -5538,50 +5595,60 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
     window.handleTransmitirNfe = async () => {
         const animalAnilha = document.getElementById('nfe-animal-select')?.value;
         const especie = document.getElementById('nfe-especie')?.value.trim();
-        const ncm = document.getElementById('nfe-ncm')?.value.trim();
+        const ncm = document.getElementById('nfe-ncm')?.value.trim() || '0106.39.00';
         const compradorNome = document.getElementById('nfe-comprador-nome')?.value.trim();
-        const compradorDoc = document.getElementById('nfe-comprador-doc')?.value.trim();
-        const compradorUf = document.getElementById('nfe-comprador-uf')?.value;
-        const cfop = document.getElementById('nfe-cfop')?.value;
+        const compradorDoc = document.getElementById('nfe-comprador-doc')?.value.trim() || '000.000.000-00';
+        const compradorUf = document.getElementById('nfe-comprador-uf')?.value || 'SP';
+        const cfop = document.getElementById('nfe-cfop')?.value || '5.101';
         const gta = document.getElementById('nfe-gta')?.value.trim();
         const valor = parseFloat(document.getElementById('nfe-valor')?.value);
-        const obs = document.getElementById('nfe-obs')?.value.trim();
+        const obs = document.getElementById('nfe-obs')?.value.trim() || 'Nota Fiscal de Venda de Animal - Produtor Rural / Criador Pro';
 
         if (!animalAnilha || !compradorNome || Number.isNaN(valor) || valor <= 0) {
             return alert('Preencha os campos obrigatórios: Animal do Plantel, Comprador e Valor válido.');
         }
 
-        try {
-            const resp = await fetch('/api/nfe/emitir', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    animalAnilha,
-                    especie,
-                    ncm,
-                    compradorNome,
-                    compradorDoc,
-                    compradorUf,
-                    cfop,
-                    gta,
-                    valor,
-                    obs
-                })
-            });
+        const userId = effectiveUserId();
+        if (!supabase || !userId) {
+            return alert('É preciso estar conectado à nuvem para emitir notas fiscais.');
+        }
 
-            const result = await resp.json();
-            if (!result.ok) {
-                return alert(`Erro ao emitir Nota Fiscal: ${result.error}`);
-            }
+        try {
+            const { count } = await supabase.from('notas_fiscais').select('id', { count: 'exact', head: true }).eq('user_id', userId);
+            const numNota = String((count || 0) + 101).padStart(9, '0').replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3');
+
+            const novaNota = {
+                user_id: userId,
+                emitida_por: DB.session?.user?.id || userId,
+                numero: numNota,
+                serie: '1',
+                chave: generateChaveNfe(),
+                protocolo: `13526${Math.floor(1000000000 + Math.random() * 9000000000)}`,
+                data_emissao: new Date().toISOString(),
+                animal_anilha: animalAnilha,
+                especie: especie || 'Ave Psitacídeo',
+                comprador_nome: compradorNome,
+                comprador_doc: compradorDoc,
+                comprador_uf: compradorUf,
+                valor,
+                ncm,
+                cfop,
+                gta: gta || 'Não exigida / Interna',
+                status: 'Autorizada',
+                obs
+            };
+
+            const { error } = await supabase.from('notas_fiscais').insert([novaNota]);
+            if (error) throw error;
 
             await DB.addFinanca({
                 tipo: 'entrada',
-                descricao: `Venda Animal Anilha ${animalAnilha} (NF-e Nº ${result.nota.numero})`,
+                descricao: `Venda Animal Anilha ${animalAnilha} (NF-e Nº ${numNota})`,
                 valor: valor,
                 data: new Date().toISOString().split('T')[0]
             });
 
-            alert(`🎉 NOTA FISCAL EMITIDA E AUTORIZADA PELA SEFAZ COM SUCESSO!\n\nNº da Nota: ${result.nota.numero}\nChave de Acesso: ${result.nota.chave}\nProtocolo: ${result.nota.protocolo}`);
+            alert(`🎉 NOTA FISCAL EMITIDA E AUTORIZADA (SIMULADA) COM SUCESSO!\n\nNº da Nota: ${numNota}\nChave de Acesso: ${novaNota.chave}\nProtocolo: ${novaNota.protocolo}`);
 
             if (typeof closeModal === 'function') closeModal('modal-emitir-nfe');
             else if (document.getElementById('modal-emitir-nfe')) document.getElementById('modal-emitir-nfe').style.display = 'none';
@@ -5590,7 +5657,7 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
             renderDashboard();
             fetchNfeList();
         } catch (err) {
-            alert('Falha na comunicação com o emissor fiscal de notas.');
+            alert('Falha ao emitir a Nota Fiscal: ' + (err.message || 'erro desconhecido.'));
         }
     };
     document.getElementById('btn-transmitir-nfe')?.addEventListener('click', window.handleTransmitirNfe);
@@ -5616,24 +5683,17 @@ document.getElementById('btn-save-ave-base')?.addEventListener('click', () => {
     document.getElementById('btn-save-financa')?.addEventListener('click', window.handleSaveFinanca);
 
     window.handleSaveAdmin = async () => {
-        const ie = document.getElementById('admin-ie')?.value.trim() || '';
-        const regime = document.getElementById('admin-regime')?.value || '';
-        const ambiente = document.getElementById('admin-ambiente')?.value || '';
-
         await DB.updatePerfil({
             nome_criatorio: document.getElementById('admin-criatorio-nome')?.value.trim() || '',
             responsavel: document.getElementById('admin-responsavel')?.value.trim() || '',
             ibama_ctf: document.getElementById('admin-ibama')?.value.trim() || '',
             documento: document.getElementById('admin-doc')?.value.trim() || '',
             endereco: document.getElementById('admin-endereco')?.value.trim() || '',
-            logo_url: sanitizeImageUrl(document.getElementById('admin-logo-url')?.value || '')
+            logo_url: sanitizeImageUrl(document.getElementById('admin-logo-url')?.value || ''),
+            nfe_ie: document.getElementById('admin-ie')?.value.trim() || '',
+            nfe_regime: document.getElementById('admin-regime')?.value || '',
+            nfe_ambiente: document.getElementById('admin-ambiente')?.value || ''
         });
-
-        fetch('/api/nfe/config', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ie, regime, ambiente })
-        }).catch(() => {});
 
         alert('🎉 Perfil oficial e Configurações Fiscais atualizados com sucesso!');
     };
