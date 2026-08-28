@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "criador-pro-api",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["apps/api/server.js"],
+      "port": 4173
+    }
+  ]
+}
