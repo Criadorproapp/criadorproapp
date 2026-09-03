@@ -1,0 +1,21 @@
+name: Keep Supabase project active
+
+# Projetos gratuitos do Supabase pausam automaticamente depois de dias sem
+# nenhum acesso à API. Este workflow faz uma chamada leve e somente-leitura
+# a cada 3 dias para manter o projeto "acordado", sem custo e sem depender
+# de nenhum computador ou app aberto.
+
+on:
+  schedule:
+    - cron: "0 12 */3 * *" # a cada 3 dias, 12:00 UTC
+  workflow_dispatch: {} # permite rodar manualmente pela aba Actions no GitHub
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST endpoint
+        run: |
+          curl -sf -o /dev/null -w "Supabase respondeu com status %{http_code}\n" \
+            "https://sqchxcogausranpggpog.supabase.co/rest/v1/" \
+            -H "apikey: sb_publishable_zeMClBfAjNrWZjvfjXN2lw_qlHPMS8T"
