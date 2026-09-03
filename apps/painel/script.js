@@ -5774,7 +5774,7 @@ window.runAgent = async function(agentName) {
     resultEl.innerHTML = `<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:1.5rem;">⚙️</span><em>Agente ${agentName.toUpperCase()} processando...</em></div>`;
 
     try {
-        const apiUrl = window.CRIADOR_PRO_CONFIG?.apiBase || 'http://localhost:4173';
+        const apiUrl = window.CRIADOR_PRO_CONFIG?.apiBase || '';
         const response = await fetch(`${apiUrl}/api/agents/${agentName}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

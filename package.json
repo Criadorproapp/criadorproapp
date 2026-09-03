@@ -2,9 +2,9 @@
   "name": "criador-pro-trabalho",
   "private": true,
   "scripts": {
-    "start": "node apps/jarvis-command/jarvis_server.js",
+    "start": "node apps/api/server.js",
     "start:api": "node apps/api/server.js",
-    "start:painel": "node apps/jarvis-command/jarvis_server.js",
+    "start:painel": "node apps/api/server.js",
     "start:studio": "node scripts/start-studio.js",
     "start:all": "node scripts/start-all.js",
     "check": "node --check script.js",
