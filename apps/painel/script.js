@@ -343,6 +343,55 @@ function __initPainel() {
         saveAveDossierMap(map);
     };
 
+    const MOCK_IDS = {
+        aves: ['1', '2', '3'],
+        recintos: ['R1', 'R2', 'R3'],
+        financas: ['F1', 'F2', 'F3', 'F4']
+    };
+
+    // Itens criados no aparelho e ainda não gravados no Supabase têm id gerado
+    // por createId (ex.: "AVE-1732...-abc123"). Ids vindos da nuvem nunca têm esse formato.
+    const isLocalOnlyId = (id) => /^(AVE|REC|FIN)-\d+-[a-z0-9]+$/.test(String(id || ''));
+
+    const toCloudAve = (ave, userId) => ({
+        anilha: ave.anilha,
+        especie: ave.especie,
+        mutacao: ave.mutacao,
+        sexo: ave.sexo,
+        categoria: ave.categoria,
+        status: ave.status,
+        nascimento: ave.nascimento || null,
+        recinto_id: ave.recinto && !isLocalOnlyId(ave.recinto) ? ave.recinto : null,
+        user_id: userId
+    });
+
+    const toCloudRecinto = (recinto, userId) => ({
+        nome: recinto.nome,
+        ala: recinto.ala,
+        tipo_comp: recinto.tipo_comp,
+        qtd_comp: recinto.qtd_comp,
+        dimensoes: recinto.dimensoes,
+        anilha_casal: recinto.anilha_casal,
+        descricao: recinto.descricao,
+        user_id: userId
+    });
+
+    const toCloudFinanca = (financa, userId) => ({
+        tipo: financa.tipo,
+        descricao: financa.descricao,
+        valor: financa.valor,
+        data: financa.data || null,
+        user_id: userId
+    });
+
+    let avisoFalhaNuvemMostrado = false;
+    const avisarFalhaNuvem = (oQue, error) => {
+        console.error(`Falha ao salvar ${oQue} no Supabase:`, error);
+        if (avisoFalhaNuvemMostrado) return;
+        avisoFalhaNuvemMostrado = true;
+        alert(`⚠️ Não foi possível salvar ${oQue} na nuvem.\n\nO dado ficou guardado neste aparelho e o app tenta enviar de novo na próxima sincronização.\n\nDetalhe: ${error?.message || error}`);
+    };
+
     class StorageService {
         constructor() {
             this.config = safeParse('cp_config', { responsavel: 'Pingo D\'Ouro' });
@@ -377,31 +426,20 @@ function __initPainel() {
         savePerfil() { localStorage.setItem('cp_perfil', JSON.stringify(this.perfil)); }
 
         initMockData() {
-            if (this.aves.length === 0) {
-                this.aves = [
-                    normalizeAve({ id: '1', anilha: 'RN-2024-001', especie: 'Ringneck', mutacao: 'Azul Sky', sexo: 'Macho', status: 'Ativo', nascimento: '2024-01-15', recinto: 'R1' }),
-                    normalizeAve({ id: '2', anilha: 'RN-2024-002', especie: 'Ringneck', mutacao: 'Verde Ancestral', sexo: 'Fêmea', status: 'Ativo', nascimento: '2024-02-10', recinto: 'R1' }),
-                    normalizeAve({ id: '3', anilha: 'CAL-2023-442', especie: 'Calopsita', mutacao: 'Pérola', sexo: 'Fêmea', status: 'Ativo', nascimento: '2023-06-20', recinto: 'R2' })
-                ];
-                this.saveAves();
-            }
-            if (this.recintos.length === 0) {
-                this.recintos = [
-                    normalizeRecinto({ id: 'R1', nome: 'Viveiro Matrizes A', tipo: 'Matrizes', descricao: 'Aves em reprodução ativa' }),
-                    normalizeRecinto({ id: 'R2', nome: 'Voadeira Filhotes', tipo: 'Filhotes', descricao: 'Recinto de sociabilização' }),
-                    normalizeRecinto({ id: 'R3', nome: 'Setor Quarentena', tipo: 'Quarentena', descricao: 'Isolamento preventivo' })
-                ];
-                this.saveRecintos();
-            }
-            if (this.financas.length === 0) {
-                this.financas = [
-                    normalizeFinanca({ id: 'F1', tipo: 'entrada', descricao: 'Venda RN Azul Sky', valor: 1200, data: '2024-03-01' }),
-                    normalizeFinanca({ id: 'F2', tipo: 'saida', descricao: 'Ração mensal', valor: 350, data: '2024-03-05' }),
-                    normalizeFinanca({ id: 'F3', tipo: 'entrada', descricao: 'Venda Calopsita Pérola', valor: 450, data: '2024-03-12' }),
-                    normalizeFinanca({ id: 'F4', tipo: 'saida', descricao: 'Medicamentos', valor: 180, data: '2024-03-18' })
-                ];
-                this.saveFinancas();
-            }
+            // Aves, recintos e finanças NÃO recebem mais dados de exemplo: eles vêm
+            // do Supabase. Os exemplos antigos (ids 1-3, R1-R3, F1-F4) eram mostrados
+            // como se fossem do criador e nunca existiram na nuvem; são removidos aqui.
+            const semExemplos = (lista, ids) => lista.filter((item) => !ids.includes(String(item.id)));
+            const avesAntes = this.aves.length;
+            const recintosAntes = this.recintos.length;
+            const financasAntes = this.financas.length;
+            this.aves = semExemplos(this.aves, MOCK_IDS.aves);
+            this.recintos = semExemplos(this.recintos, MOCK_IDS.recintos);
+            this.financas = semExemplos(this.financas, MOCK_IDS.financas);
+            if (this.aves.length !== avesAntes) this.saveAves();
+            if (this.recintos.length !== recintosAntes) this.saveRecintos();
+            if (this.financas.length !== financasAntes) this.saveFinancas();
+
             if (this.estoque_alimentos.length === 0) {
                 this.estoque_alimentos = [
                     normalizeInsumo({ id: 'INS1', nome: 'Extrusada High-Protein MegaZoo 10kg', categoria: 'Extrusada', qtd: 12, minimo: 3, fornecedor: 'MegaZoo', validade: '2026-11-20' }),
@@ -455,6 +493,14 @@ function __initPainel() {
             const userId = effectiveUserId();
             if (!userId) return;
             try {
+                // 1) Envia primeiro o que foi criado neste aparelho e ainda não está na nuvem.
+                //    Recintos vão antes das aves para que a ave possa apontar para o recinto já gravado.
+                await this.enviarPendentes('recintos', 'o recinto', toCloudRecinto, normalizeRecinto, userId);
+                await this.enviarPendentes('aves', 'a ave', toCloudAve, normalizeAve, userId);
+                await this.enviarPendentes('financas', 'o lançamento', toCloudFinanca, normalizeFinanca, userId);
+
+                // 2) A nuvem passa a ser a fonte da verdade. Só ficam a mais os itens que
+                //    continuam pendentes porque o envio falhou.
                 const [avesResp, recintosResp, financasResp, perfilResp] = await Promise.all([
                     supabase.from('aves').select('*').eq('user_id', userId),
                     supabase.from('recintos').select('*').eq('user_id', userId),
@@ -462,27 +508,19 @@ function __initPainel() {
                     supabase.from('perfil_criatorio').select('*').eq('user_id', userId).maybeSingle()
                 ]);
 
-                if (Array.isArray(avesResp.data) && avesResp.data.length) {
-                    const cloudAves = avesResp.data.map(normalizeAve);
-                    const cloudIds = new Set(cloudAves.map(a => a.id));
-                    const localOnly = this.aves.filter(a => !cloudIds.has(a.id));
-                    this.aves = [...cloudAves, ...localOnly];
-                    this.saveAves();
-                }
-                if (Array.isArray(recintosResp.data) && recintosResp.data.length) {
-                    const cloudRec = recintosResp.data.map(normalizeRecinto);
-                    const cloudIds = new Set(cloudRec.map(r => r.id));
-                    const localOnly = this.recintos.filter(r => !cloudIds.has(r.id));
-                    this.recintos = [...cloudRec, ...localOnly];
-                    this.saveRecintos();
-                }
-                if (Array.isArray(financasResp.data) && financasResp.data.length) {
-                    const cloudFin = financasResp.data.map(normalizeFinanca);
-                    const cloudIds = new Set(cloudFin.map(f => f.id));
-                    const localOnly = this.financas.filter(f => !cloudIds.has(f.id));
-                    this.financas = [...cloudFin, ...localOnly];
-                    this.saveFinancas();
-                }
+                const aplicar = (resp, campo, normalizar, salvar) => {
+                    if (resp.error || !Array.isArray(resp.data)) {
+                        console.error(`Não foi possível ler ${campo} do Supabase:`, resp.error);
+                        return; // mantém o que está no aparelho
+                    }
+                    const pendentes = this[campo].filter((item) => isLocalOnlyId(item.id));
+                    this[campo] = [...resp.data.map(normalizar), ...pendentes];
+                    salvar.call(this);
+                };
+                aplicar(avesResp, 'aves', normalizeAve, this.saveAves);
+                aplicar(recintosResp, 'recintos', normalizeRecinto, this.saveRecintos);
+                aplicar(financasResp, 'financas', normalizeFinanca, this.saveFinancas);
+
                 if (perfilResp.data) {
                     this.perfil = perfilResp.data;
                     this.savePerfil();
@@ -490,6 +528,39 @@ function __initPainel() {
                 }
             } catch (error) {
                 console.error('Erro na sincronização com a nuvem:', error);
+            }
+        }
+
+        // Grava um item na nuvem e devolve a linha criada (com o id definitivo), ou null se falhar.
+        async gravarNaNuvem(tabela, oQue, payload, normalizar) {
+            let { data, error } = await supabase.from(tabela).insert([payload]).select().single();
+            // A tabela "recintos" no Supabase só tem nome/tipo/descricao. Enquanto as colunas
+            // extras (ala, tipo_comp, qtd_comp, dimensoes, anilha_casal) não forem criadas,
+            // grava o básico em vez de perder o recinto.
+            if (error && tabela === 'recintos' && /column/i.test(error.message || '')) {
+                ({ data, error } = await supabase.from(tabela).insert([{
+                    nome: payload.nome,
+                    tipo: payload.ala,
+                    descricao: payload.descricao,
+                    user_id: payload.user_id
+                }]).select().single());
+            }
+            if (error) {
+                avisarFalhaNuvem(oQue, error);
+                return null;
+            }
+            return normalizar(data);
+        }
+
+        async enviarPendentes(campo, oQue, paraNuvem, normalizar, userId) {
+            const pendentes = this[campo].filter((item) => isLocalOnlyId(item.id));
+            for (const item of pendentes) {
+                const salvo = await this.gravarNaNuvem(campo, oQue, paraNuvem(item, userId), normalizar);
+                if (!salvo) continue;
+                this[campo] = this[campo].map((x) => x.id === item.id ? salvo : x);
+                if (campo === 'recintos') {
+                    this.aves = this.aves.map((ave) => ave.recinto === item.id ? { ...ave, recinto: salvo.id } : ave);
+                }
             }
         }
 
@@ -522,20 +593,14 @@ function __initPainel() {
             const userId = effectiveUserId();
             if (supabase && userId) {
                 try {
-                    await supabase.from('aves').insert([{
-                        anilha: localAve.anilha,
-                        especie: localAve.especie,
-                        mutacao: localAve.mutacao,
-                        sexo: localAve.sexo,
-                        categoria: localAve.categoria,
-                        status: localAve.status,
-                        nascimento: localAve.nascimento || null,
-                        recinto_id: localAve.recinto || null,
-                        user_id: userId
-                    }]);
-                    await this.syncWithCloud();
+                    const salvo = await this.gravarNaNuvem('aves', 'a ave', toCloudAve(localAve, userId), normalizeAve);
+                    if (salvo) {
+                        this.aves = this.aves.map((x) => x.id === localAve.id ? salvo : x);
+                        this.saveAves();
+                        return salvo;
+                    }
                 } catch (error) {
-                    console.error('Não foi possível sincronizar a ave com a nuvem.', error);
+                    avisarFalhaNuvem('a ave', error);
                 }
             }
             return localAve;
@@ -565,19 +630,14 @@ function __initPainel() {
             const userId = effectiveUserId();
             if (supabase && userId) {
                 try {
-                    await supabase.from('recintos').insert([{
-                        nome: localRecinto.nome,
-                        ala: localRecinto.ala,
-                        tipo_comp: localRecinto.tipo_comp,
-                        qtd_comp: localRecinto.qtd_comp,
-                        dimensoes: localRecinto.dimensoes,
-                        anilha_casal: localRecinto.anilha_casal,
-                        descricao: localRecinto.descricao,
-                        user_id: userId
-                    }]);
-                    await this.syncWithCloud();
+                    const salvo = await this.gravarNaNuvem('recintos', 'o recinto', toCloudRecinto(localRecinto, userId), normalizeRecinto);
+                    if (salvo) {
+                        this.recintos = this.recintos.map((x) => x.id === localRecinto.id ? salvo : x);
+                        this.saveRecintos();
+                        return salvo;
+                    }
                 } catch (error) {
-                    console.error('Não foi possível sincronizar o recinto com a nuvem.', error);
+                    avisarFalhaNuvem('o recinto', error);
                 }
             }
             return localRecinto;
@@ -608,16 +668,14 @@ function __initPainel() {
             const userId = effectiveUserId();
             if (supabase && userId) {
                 try {
-                    await supabase.from('financas').insert([{
-                        tipo: localFinanca.tipo,
-                        descricao: localFinanca.descricao,
-                        valor: localFinanca.valor,
-                        data: localFinanca.data || null,
-                        user_id: userId
-                    }]);
-                    await this.syncWithCloud();
+                    const salvo = await this.gravarNaNuvem('financas', 'o lançamento', toCloudFinanca(localFinanca, userId), normalizeFinanca);
+                    if (salvo) {
+                        this.financas = this.financas.map((x) => x.id === localFinanca.id ? salvo : x);
+                        this.saveFinancas();
+                        return salvo;
+                    }
                 } catch (error) {
-                    console.error('Não foi possível sincronizar o lançamento com a nuvem.', error);
+                    avisarFalhaNuvem('o lançamento', error);
                 }
             }
             return localFinanca;
