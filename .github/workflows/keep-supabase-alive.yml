@@ -14,8 +14,11 @@ jobs:
   ping-supabase:
     runs-on: ubuntu-latest
     steps:
+      # A raiz /rest/v1/ passou a exigir chave secreta (401), então o ping
+      # consulta uma tabela real com a chave pública: isso toca o banco e
+      # conta como atividade, sem expor nenhum dado (RLS devolve lista vazia).
       - name: Ping Supabase REST endpoint
         run: |
           curl -sf -o /dev/null -w "Supabase respondeu com status %{http_code}\n" \
-            "https://sqchxcogausranpggpog.supabase.co/rest/v1/" \
+            "https://sqchxcogausranpggpog.supabase.co/rest/v1/aves?select=id&limit=1" \
             -H "apikey: sb_publishable_zeMClBfAjNrWZjvfjXN2lw_qlHPMS8T"
